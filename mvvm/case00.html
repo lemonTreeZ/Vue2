@@ -22,12 +22,13 @@
          * controller：控制层：用来处理业务逻辑，负责从视图里面读取数据并向模型发送数据
          */
         class View {
-            constructor() {
+            constructor(controller) {
                 this.ele = document.querySelector('.view')
             }
             render(model) {
                 this.ele.innerText = model.getVal()
             }
+        
         }
 
         class Model {
@@ -52,7 +53,7 @@
                 this.init()
             }
             init() {
-                this.view.ele.addEventListener('click',(e) => {
+                this.view.ele.addEventListener('click',() => {
                     this.model.add()
                     this.view.render(this.model)
                 })
@@ -63,6 +64,7 @@
         let model = new Model()
         view.render(model)
         new Controller(view,model)
+
     </script>
 </body>
 </html>
