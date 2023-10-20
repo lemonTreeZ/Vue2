@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MVVM</title>
+    <title>Vue</title>
 </head>
 <body>
     <div id="app">
@@ -11,12 +11,68 @@
     </div>
     <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script> -->
     <script>
-        const app = new Vue({
-            el: '#app',
-            data: {
-                num: 1
+
+        function nodeToFragment(node,vm) {
+            let flag = document.createDocumentFragment()
+            let child
+            // 循环取出node中的第一个子节点，放入compile处理，后移动到fragement
+            while (child = node.firstChild) {
+                compile(child,vm)
+                flag.append(child)
             }
-        })
+            return flag
+        }
+        console.log("t",nodeToFragment(document.querySelector('#app')))
+        /**
+         * 1. 解析原始dom，获取内容的差值标识 {{model}}
+         * 2. 提取的差值标识 数据与model层进行绑定
+         */
+        // 解析原始view,提取其中的model差值
+        function compile(node,vm) {
+            let reg = /(.*)\{\{(.*)\}\}(.*)/
+            if(node.nodeType === 1) {
+                // node 为Element的节点
+                let attr = node.attributes
+                for(let i = 0,len = attr.length; i<len; i++) {
+                    if(attr[i].nodeName === 'v-model') {
+                        let name = attr[i].nodeValue
+                        node.addEventListener('input',(e) => {
+                            // TODO
+                            console.log("e.target.value:",e.target.value)
+                        })
+                        console.log("1-name",name)
+                        node.value = vm[name] //model层数据对象
+                        node.removeAttribute("v-model")
+                    }
+                }
+            }
+            if(node.nodeType === 3) {
+                // node为text类型节点
+                if(reg.test(node.nodeValue)) {
+                    let name = RegExp.$1
+                    name = name.trim()
+                    node.nodeValue = vm[name] //model层数据对象
+                    console.log("3-name",name)
+                }
+            }
+        }
+
+        class Vue {
+            constructor({el,data}) {
+                this.data = data
+                this.num = this.data.num
+                let ele = document.querySelector(el)
+                let dom = nodeToFragment(ele,this)
+                ele.appendChild(dom)
+                
+            }
+        }
+        // const app = new Vue({
+        //     el: '#app',
+        //     data: {
+        //         num: 1
+        //     }
+        // })
     </script>
 </body>
 </html>
