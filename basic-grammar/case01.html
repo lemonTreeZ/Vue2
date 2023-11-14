@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./node_modules//vue/dist/vue.js"></script>
+    <style>
+        .active {
+            color: red;
+        }
+        #active {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <!-- 
+        DOM开发
+        
+        DOM树
+            增、删、改(修改DOM层级、内容、属性)、查(获取内容、innerHTML、innerText、children)
+        标签属性
+            class、id、style、自定义属性
+        events
+            click、keyup、input、mouse
+     -->
+     <div id="app">
+        <p v-bind:hidden = "isHide">{{message}}</p>
+        <p v-bind:class="className"></p>
+        <p :[attr] = "tag">动态属性</p>
+     </div>
+     <script>
+        // (0 空字符串 NaN)真值 (undifined null false)为假值 
+        // ?? (0 和 '')会是假值
+        /**
+         * v-bind 可以省略 直接写v-bind
+         * 数据属性值如果是 true false 直接决定标签属性是否渲染
+         * 数据属性值如果是 null undefined 直接决定标签属性 不渲染 等价于false
+         * 数据属性值如果是 0 NaN '' 直接决定标签属性渲染 但是 标签属性无值
+         * 数据属性值如果是 非布尔值 非null 非undefined 非0 NaN ''的正常值，都会作为标签值正常渲染
+         * 属性名动态参数的值只能是非空字符串和null
+         */
+        let app =  new Vue({
+            el: '#app',
+            data() {
+                return {
+                    message: 'Hello world',
+                    isHide: false,
+                    className: ['active','header'],
+                    tag: 'active',
+                    attr: 'id'
+                }
+            },
+            methods: {
+
+            }
+        })
+     </script>
+</body>
+</html>
