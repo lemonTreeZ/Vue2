@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>事件监听</title>
+    <script src="./node_modules//vue/dist/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <p>{{count}}</p>
+        <button v-on:click="addCount">点击</button>
+        <ul>
+            <li v-for="item in list">名称：{{item.content}} -- 数量：{{item.count}} 
+                <input type="text" @input.enter="listAddCount(item)" ></input>
+                <input type="text" @keyup.enter="listAddCount(item)" ></input>
+            </li>
+            
+        </ul>
+    </div>
+    <script>
+        /**
+         * 事件修饰符
+         * 事件.prevent：阻止事件默认行为
+         * 事件.stop：阻止事件向上冒泡
+         */
+        let app = new Vue({
+            el: '#app',
+            data() {
+                return{
+                    count: 0,
+                    list: [
+                        {
+                            content: "phone",
+                            count: 5
+                        },
+                        {
+                            content: "computer",
+                            count:3
+                        }
+                    ]
+                }
+            },
+            methods:{
+                addCount() {
+                    this.count ++ 
+                },
+                listAddCount(item) {
+                    item.count++ 
+                }
+            }
+        })
+    </script>
+</body>
+</html>

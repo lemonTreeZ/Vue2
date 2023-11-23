@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>v-for渲染</title>
+    <script src="./node_modules//vue/dist/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div class="pet">
+            <p v-for="(item,index) in pet">{{item.type}}:{{item.name}}--{{index}}</p>
+        </div>
+    </div>
+    <script>
+        /**
+         * 向数组和对象通过下标修改属性不能及时响应数据和对象的变化触发视图更新
+         * 因为Vue实例化后对数据进行了defineProperty绑定，直接追加新的属性没有进行绑定，所以不会进行DOM响应
+         * Vue将被监听的数组的变更方法进行了包裹，所以它们也会触发视图更新
+         * 方法包括：push()、pop()、shift()、unshift()、splice()、sort()、reverse()
+         */
+
+         /**
+          * for渲染的property属性 值为对象/数组
+          * 1.修改整个property的值(属性的值) view层可以响应 app.pet[0].type = "fish" √
+          * 2.直接修改property的数组/对象值的某一项 view无法响应 app.pet[0] = {type:"fish",name: "鱼"} ×
+          * 3.通过Vue提供的侦听包装方法，对property数组进行操作，view可以响应
+          */
+        let obj = {
+            list: [1,2,3,4,5]
+        }
+        defineReactive(obj,'list',obj['list'])
+        console.log(obj.list)
+        function defineReactive(obj,key,val) {
+            Object.defineProperty(obj, key, {
+                get() {
+                    console.log(`${key}触发getter`)
+                    return val
+                },
+                set(newVal) {
+                    console.log(`${key}触发setter`)
+                   val = newVal
+                }
+            })
+        }
+        let app = new Vue({
+            el: '#app',
+            data() {
+                return {
+                    pet: [
+                        {
+                            type: 'cat',
+                            name: '猫'
+                        },
+                        {
+                            type: 'dog',
+                            name: '狗'
+                        },
+                        {
+                            type: 'parrot',
+                            name: '鹦鹉'
+                        }
+                    ]
+                }
+            }
+        })
+    </script>
+</body>
+</html>
