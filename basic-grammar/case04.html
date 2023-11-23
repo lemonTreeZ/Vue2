@@ -16,15 +16,16 @@
         支持可选的第二个参数为property名称，也就是键名；支持可选的第三个参数，也就是索引(会按照Object.keys()的结果遍历)
         [不能保证在不同的js引擎下，Object.keys()的结果相似]
      -->
+    
     <div id="app">
         <ul>
-            <li v-for="(item,idx) in list">{{idx}}-{{item}}</li>
+            <li v-for="(item,idx) in list" :key="idx">{{idx}}-{{item}}</li>
         </ul>
         <div class="product">
-            <p v-for="(val,key,idx) in product">{{key}}:{{val}}--{{idx}}</p>
+            <p v-for="(val,key,idx) in product" :key="idx">{{key}}:{{val}}--{{idx}}</p>
         </div>
         <div class="pet">
-            <p v-for="(item,index) in pet">{{item.type}}:{{item.name}}--{{index}}</p>
+            <p v-for="(item,index) in pet" :key="index">{{item.type}}:{{item.name}}--{{index}}</p>
         </div>
     </div>
     <script>

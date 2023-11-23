@@ -30,7 +30,7 @@
             list: [1,2,3,4,5]
         }
         defineReactive(obj,'list',obj['list'])
-        console.log(obj.list)
+        // console.log(obj.list)
         function defineReactive(obj,key,val) {
             Object.defineProperty(obj, key, {
                 get() {

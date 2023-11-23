@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>v-for key</title>
+    <script src="./node_modules//vue/dist/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+       <!-- 
+        vue中列表循环需要加上key：唯一标识，可以是item里面的id index等，因为vue组件高度复用，增加key可以标识组件的唯一性，key的作用主要是为了高效地更新虚拟dom
+        用v-for更新已渲染的元素列表时，会使用就地复用的策略，列表数据修改的时候，会根据key值取判断某个值是否修改，如果修改了就重新渲染， 不然就复用之前的元素
+        有相同父元素的子元素必须有独特的key，重复的key会造成渲染错误
+        key也可以用于强制替换元素/组件而不是重复使用，有以下使用场景
+        1. 完整地触发组件的生命周期钩子
+        2. 触发过渡 <transition><span :key="text">{{text}}</span></transition> 当text发生改变时，插值表达式总是会替换而不是被修改，因此会触发过渡
+
+        如果不加key，向列表前面添加数据的时候，为了减少重排，vue只会去修改标签的值，而不会从头到尾替换li去重新渲染
+      -->
+        <div>
+            <input type="text" v-model="name">
+            <button @click="add">添加</button>
+        </div>
+        <ul>
+            <!-- <li v-for="(item,index) in list" :key="item.id" :data-idx="item.id"><input type="checkbox">{{item.name}}</li> -->
+            <li v-for="(item,index) in list"><input type="checkbox">{{item.name}}</li>
+        </ul>
+    </div>
+    <script>
+        let app = new Vue({
+            el: "#app",
+            data() {
+                return {
+                    name: "",
+                    newId: 3,
+                    list:[
+                        {id:1,name:'苹果'},
+                        {id:2,name:'梨子'},
+                        {id:3,name:'葡萄'}
+                    ]
+                }
+            },
+            methods:{
+                add() {
+                    this.list.unshift({id:++this.newId,name:this.name})
+                }
+            }
+        })
+    </script>
+</body>
+</html>
