@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>style动态绑定</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        #app {
+            width: 600px;
+            margin: 100px auto;
+        }
+        .box {
+            width: 80px;
+            height: 60px;
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div :style="styleObj" class="box">{{message}}</div>
+        <div :style="{width:boxWidth,color:'blue'}" class="box">{{message}}</div>
+        <div :style="[styleObj,wrapStyle]" class="box">{{message}}</div>
+        <!-- 渲染数组中最后一个 被浏览器支持的值 当style使用需要添加浏览器引擎前缀的css property时，Vue会自动检测并添加相应的前缀-->
+        <div :style="{'display': ['flex','-webkit-grid','-ms-grid']}"></div>
+    </div>
+    <script>
+        /**
+         * 
+         * 
+         */
+        let app = new Vue({
+            el: '#app',
+            data() {
+                return {
+                    message:'测试',
+                    styleObj: {
+                        width: '200px'
+                    },
+                    wrapStyle:{
+                        color: 'red'
+                    },
+                    boxWidth: '300px'
+                }
+            },
+            methods: {}
+        })
+    </script>
+</body>
+</html>

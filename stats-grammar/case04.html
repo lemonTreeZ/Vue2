@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue computed</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        a {
+            text-decoration: none;
+        }
+        .tab-wrap {
+            display: flex;
+            flex-direction: column;
+            height: 380px;
+            width: 280px;
+            border: 1px solid #222;
+            margin: 100px auto;
+        }
+        .tab-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 40px;
+            text-align: center;
+            line-height: 40px;
+        }
+        .tab-title>a {
+            flex: 1;
+            padding: 2px 10px;
+            color: #222;
+        }
+        .tab-title>a+a {
+            border-left: 1px solid #ccc;
+        }
+        .tab-content {
+            flex: 1;
+            position: relative;
+            background-color: #ccc;
+            border-top: 1px solid #222;
+        }
+        .tab-item {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            background-color: #fff;
+            text-align: center;
+            line-height: 180px;
+        }
+        .tab-title>.active {
+            background-color: #222;
+            color: #fff;
+        }
+     </style>
+</head>
+<body>
+    <div id="app">
+      <p>姓: {{lastName}}</p>
+      <p>名: {{firstName}}</p>
+      <span>姓名：</span><input type="text" v-model="fullName"/>
+      <p>{{fullName}}</p>
+      <p>{{timeSec}}</p>
+    </div>
+    <script>
+        /**
+         * 数据处理
+         * 原始数据 => 数据处理(转义、格式化、筛选) => 展示给用户
+         * 在vue中，computed的属性可以被视为data一样，可以取值和设置值，因此会有getter和setter方法，一般情况下没有setter，computed只预设了getter
+         * 所以默认格式只有getter，而且computed里的值只能在模板中使用，会触发生命周期的updated()
+         */
+        let app = new Vue({
+            el: '#app',
+            data() {
+                return{
+                    firstName: '三',
+                    lastName: '张',
+                    sec: 8
+                }
+            },
+            methods: {
+               
+            },
+            computed: {
+                timeSec() {
+                    return String(this.sec)[1] && String(this.sec) || '0' + this.sec
+                },
+                fullName: {
+                    get() {
+                        return this.lastName + this.firstName
+                    },
+                    set(val) {
+                        let fullName = val
+                        this.lastName = fullName.split('')[0]
+                        this.firstName = fullName.split('')[1]
+                    }
+                }
+            }
+        })
+    </script>
+</body>
+</html>
