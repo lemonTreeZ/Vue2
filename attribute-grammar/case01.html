@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>watch侦听器</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+</head>
+<body>
+    <div id="app">
+        <form action=" javascript:;">
+            <input type="text" name="letter" placeholder="请输入用户名" v-model.lazy="letter">
+        </form>
+        <p>{{letterTrans}}</p>
+    </div>
+    <script>
+        /**
+         * 虽然计算属性在大多数情况下更合适，但有时也需要一个自定义的侦听器
+         * Vue提供了一个更通用的方法，来响应数据的变化，当需要在数据变化时执行异步或开销较大的操作时，watch时更有效的方式
+         * Vue实例将会在实例化时调用$watch，遍历watch对象的每一个属性
+         * watch:{
+         *    属性名称(当前值,之前值){}
+         * }
+         * watch自定义侦听器 当对应的属性发生变化的时候 响应执行 侦听属性的变化 回调(当前值，之前值)
+         * computed 及时性计算属性，同步响应，异步不能响应
+         * methods 调用式 可响应 可异步 主动 异步有条件限制
+         * 异步 事件不可以(async await) 可以(then catch) view需要return(methods的属性)
+         * 
+         * watch 允许异步，针对属性被动触发，当属性改变的时候触发setter&&两次值不同 可异步 没有return要求
+         * 属性
+         * handler(当前值，之前值){} 
+         * immediate：组件创建时刻是否执行
+         * deep：深度监听 不推荐使用(非常消耗性能)
+         * 监听的属性式对象的化，不开启deep对象的子属性变化不会触发watch 开启deep后对象内部所以子属性变化都会触发watch
+         */
+        let app = new Vue({
+            el: '#app',
+            data() {
+                return {
+                    letter: '',
+                    letterTrans: '',
+                    obj: {
+                        val: '123',
+                        title: '初始值'
+                    }
+                }
+            },
+            methods: {
+                 translate(val) {
+                     axios.get(`http://127.0.0.1:3000/translate?q=${val}`).then(res => {
+                        this.letterTrans = res.data
+                    }).catch()
+                }
+            },
+            computed: {
+
+            },
+            watch:{
+                'obj.val': {
+                    handler(newVal,oldVal) {
+                        this.letterTrans = newVal
+                    },
+                    deep: true,
+                    immediate: true
+                },
+            
+                async letter(newVal,oldVal) {
+                    let res = await axios.get(`http://127.0.0.1:3000/translate?q=${newVal}`)
+                    this.letterTrans = res.data
+                } 
+            }
+        })
+    </script>
+</body>
+</html>
