@@ -84,27 +84,88 @@ export const trim = (value,type) => {
 
 /**
  * @description 日期时间格式化
- * @example
+ * @example Date() | formateDate -> 2023-01-01 00:00:00
+ * @example '2023/10/01 12:30:45' | formatDate('yyyy-MM-dd hh:mm:ss w') -> 2023-10-01 12:30:45 星期四
  * @param {Date} value
  * @param {String} fmt 格式化模板 
  */
-export const formatDate = () => {
-
+export const formatDate = (value,fmt='yyyy-MM-dd hh:mm:ss') => {
+    const date = new Date(value)
+    const o = {
+        'M+': date.getMonth() + 1,
+        'd+': date.getDate(),
+        'h+': date.getHours(),
+        'm+': date.getMinutes(),
+        's+': date.getSeconds(),
+        'w+': date.getDay(),
+        'q+': Math.floor((date.getMonth() + 3) / 3),
+        S: date.getMilliseconds()
+    }
+    const weeks = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六']
+    if(/(y+)/.test(fmt)) {
+        fmt = fmt.replace(RegExp.$1, (date.getFullYear() + '').substr(4 - RegExp.$1.length))
+    }
+    for(let k in o) {
+        if(k === 'w+') {
+            let weekLetter = weeks[o['w+']]
+            fmt = fmt.replace('w',weekLetter)
+        }else if(new RegExp(`(${k})`).test(fmt)) {
+            fmt = fmt.replace(RegExp.$1,RegExp.$1.length===1?o[k]:('00'+o[k]).substr((''+o[k]).length))
+        }
+    }
+    return fmt
 }
 
 /**
  * @description 文件大小显示转换
+ * @example 12 -> 12.0B
+ * @example 98223445 -> 93.7MB
  * @param {String|Number} bytes
  */
+export const bytesToSize = (bytes) => {
+    bytes = bytes.toString()
+    if(bytes === 0) return '0B'
+    const k = 1024
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    const sizes = ['B','KB','MB','GB','TB','PB','EB','ZB','YB']
+    return (bytes / Math.pow(k,i).toPrecision(3) + ' ' + sizes[i])
+}
 
 /**
  * @description 千分位格式化
- * @example
+ * @example 1234567->1,234,567
  * @param {String|Number} value
  */
+export const thousands = (value,fractionDigits = 0) => {
+    const regexp = /\d{1,3}(?=(\d{3})+(\.\d*)?$)/g
+    return (Number(value).toFixed(fractionDigits)+'').replace(regexp,'$&,')
+}
 
 /**
  * @description 现金数字转大写
- * @example
+ * @example 1234.567 -> 壹仟贰佰叁拾肆元伍陆分柒厘
  * @param {String|Number} value
  */
+export const upDigit = (value) => {
+    const digit = ['零','壹','贰','叁','肆','伍','陆','柒','捌','玖']
+    const fraction = ['角','分','厘']
+    const unit = [['元','万','亿'],['','拾','佰','仟']]
+    let s = ''
+    let head = value < 0 ? '欠':''
+    value = Math.abs(value)
+    for(let i = 0; i < fraction.length; i++) {
+        s += (digit[Math.floor(value*10*Math.pow(10,i))%10] + fraction[i].replace(/零./,''))
+    }
+
+    s = s || '整'
+    for(let i = 0;i < unit[0].length && value > 0; i++) {
+        let p = ''
+        for(let j = 0; j < unit[1].length && value > 0; j++) {
+            p = digit[value % 10] + unit[1][j] + p
+            value = Math.floor(value / 10)
+        }
+        s = p.replace(/(零.)*零$/,'').replace(/^$/,'零') + unit[0][i] + s
+    }
+
+    return (head + s.replace(/(零.)*零元/,'元').replace(/(零.)+/g, '零').replace(/^整$/,'零元整') )
+}
