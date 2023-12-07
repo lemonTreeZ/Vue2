@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生命周期-create</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+</head>
+<body>
+    <div id="app"><p>{{message}}</p></div>
+    <script>
+        /**
+         * 生命周期：从Vue实例创建、运行到销毁期间，伴随着各种事件，这段时间统称为生命周期
+         * new Vue() => beforeCreate(hook 钩子函数)=>CREATE(节点处理函数)=>created=>beforeMount=>MOUNT=>mouted=>beforeUpdate=>updated=>beforeDestroy=>destroyed
+         * 创建阶段
+         * beforeCreate之前 Vue需要将自身的属性方法规则初始化 initLifecycle初始化生命周期钩子函数 initEvents渲染规则和方法 initRender视图构建
+         * beforeCreate: 实例刚在内存中创建处来，还没有初始化data和methods，只包含一些自带的生命周期钩子函数，model绑定 状态初始化 方法初始化
+         * created：实例已经在内存中创建完成，此时data和methods已经创建完成
+         * beforeMount：此时已经完成了模板的编译，只是还没有渲染到界面中去，实际上$el是没有被创建的
+         * mounted：模板已经渲染到了浏览器，创建阶段结束，即将进入运行阶段
+         */
+        /**
+         * 钩子 hook 通知后执行 当一个消息或命令到达时，执行已经准备好的行动
+         * 回调 callback 不是立刻做，等...结束再做
+         */
+        let app = new Vue({
+            el: '#app',
+            data() {
+                return {
+                    message: '测试数据'
+                }
+            },
+            methods: {
+
+            },
+            beforeCreate() {
+                console.log("beforeCreate",this.message);
+            },
+            created() {
+                console.log("created",this.message);
+            },
+            beforeMount() {
+                console.log("beforeMounted",this.$el);
+            },
+            mounted() {
+                console.log("mounted",this.$el);
+            }
+        })
+    </script>
+</body>
+</html>
