@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>组件化开发</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+</head>
+<body>
+    <!-- 
+        Vue就是由一个个组件构成的，它提供了一种抽象，让我们可以开发出一个个独立可复用的部分来构建我们的应用，任何一个应用都可以用组件化思想抽象成一个组件树
+        组件化原因
+            页面逻辑越来越多，代码越来越庞大，不易维护，项目复杂度增加
+            不好定位问题，牵一发而动全身，质量差，不可控
+            同样的逻辑在多个地方重复书写，不好改动，重复性劳动多，效率低
+        组件化思想应用
+            高内聚低耦合，组件的粒度尽可能细，个体功能独立且完善，具备高复用度
+            组件是具有一定意义的功能集合体，通常组件可以有自己的名字
+        组件分类
+            页面级别的组件，通常是pages或者views目录下的.vue组件，是组成整个项目的一个大的页面，一般不会有对外的接口
+            业务上可复用的基础组件，通常是在业务中被各个页面复用的组件，这一类组件通常都写到components目录下，通过import在各个页面使用，通常是实现某个功能
+            与业务无关的独立组件，通常是作为基础组件，在各个业务组件或者页面组件中使用，通常写在utils目录中，比如富文本编辑器，ElementUI等
+     -->
+     <div id="app">
+        <div class="product">
+            <product-item></product-item>
+        </div>
+     </div>
+    <script>
+        /**
+         * 组件的使用：组件构造、组件注册、组件使用
+         * 组件构造：
+         * Vue.extend(options)
+         * options: 一个包含组件选项的对象，模板template第一级只能有一个标签
+         * data选项是特里，在Vue.extend中必须是函数
+         * 组件名可以用帕斯卡命名(单词首字母全大写),也可以用kebab-case(短横线连接)，推荐帕斯卡命名
+         * 组件注册
+         * Vue.component(id,[definition])
+         * id: string 组件tag名称
+         * definition：Function | Object 设置参数对象
+         * 也可以用语法糖，构建和注册在一起
+         */
+        //构建组件
+        const ProductItem = Vue.extend({
+            template: `
+                <div class='product'>
+                    <p>子组件</p>    
+                </div>
+            `
+        })
+        //注册组件(全局注册)
+        Vue.component('ProductItem',ProductItem)
+        //通常用语法糖的形式简化组件构建
+        // Vue.component('ProductItem',{
+        //     template: `
+        //         <div class='product'>
+        //             <p>子组件</p>    
+        //         </div>
+        //     `
+        // })
+        const app = new Vue({
+            el: '#app',
+            data() {
+                return {
+                    product: {
+                        title: '计算机',
+                        price: '100000'
+                    }
+                }
+            },
+            methods:{}
+        })
+    </script>
+</body>
+</html>

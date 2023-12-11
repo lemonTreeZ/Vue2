@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>组件嵌套</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- <div id="mount-profile"></div> -->
+        <profile></profile>
+        <product-item></product-item>
+    </div>
+    <script>
+        /**
+         * data只能用函数
+         * 使用Vue.component注册的都是全局组件
+         * 实例使用components注册局部组件，项目中更多使用局部组件，并且一般只拥有一个Vue实例
+         * 组件的子组件不能混用，不能跨级别去使用子组件，只能使用自己注册的子组件
+         */
+        const Profile = {
+            template: `<p>{{firstName}}--{{lastName}}</p>`,
+            data() {
+                return {
+                    firstName: 'Walter',
+                    lastName: 'White'
+                }
+            }
+        }
+        const ProductItem ={
+            template: `
+                <div class='product'>
+                    <p>子组件</p>
+                    <p @click=add>{{number}}</p>    
+                </div>
+            `,
+            data() {
+                return {
+                    number: 1
+                }
+            },
+            methods: {
+                add() {
+                    this.number ++
+                }
+            }
+        }
+        // Vue.component("Profile",Profile)
+        // 创建实例并挂载到一个dom实例上
+        // new Profile().$mount('#mount-profile')
+        const app = new Vue({
+            el: '#app',
+            data() {
+                return {
+
+                }
+            },
+            components: {
+                //局部组件
+                Profile,
+                ProductItem
+            }
+        })
+    </script>
+</body>
+</html>
