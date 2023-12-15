@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多层组件数据传递</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+    <style>
+        #app {
+            width: 600px;
+            margin: 100px auto;
+        }
+        .product-item {
+            padding: 20px;
+            line-height: 26px;
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <!-- 爷爷 -->
+    <div id="app">
+        <product-item :product="product" v-for="product in products"></product-item> 
+    </div>
+    <!-- 孙子 -->
+    <template id="counter-button-quantity">
+        <p>{{quantity | limitMin}}<button @click="addQuantity">增加</button><button @click="subQuatity">减少</button></p>
+    </template>
+    <!-- 儿子、父亲 -->
+    <template id="product-item">
+        <div class="product-item">
+            <p>商品名称:{{product.name}}</p>
+            <p>商品价格:{{product.price}}</p>
+            <div>商品数量: <counter-button-quantity :quantity="product.quantity"></counter-button-quantity></div>
+        </div>
+    </template>
+    <script>
+        /**
+         * 组件通信 上下原则
+         * 父组件 <==> 子组件
+         * 数据永远从上向下传递，通过props，数据流向永远是向下的
+         * 
+         */
+        const CounterButtonQuantity = {
+            props: {
+                quantity: {
+                    type: Number
+                }
+            },
+            filters: {
+                limitMin(value) {
+                    return Math.max(0,value)
+                }
+            },
+            template: '#counter-button-quantity',
+            methods:{
+                addQuantity() {
+
+                },
+                subQuatity() {
+
+                }
+            }
+        }
+        const ProductItem = {
+            template: '#product-item',
+            components:{CounterButtonQuantity},
+            props: {
+                product:{
+                    type: Object
+                    
+                }
+            }
+        }
+        const app = new Vue({
+            el: '#app',
+            components:{ProductItem},
+            data() {
+                return {
+                    products: [
+                        {   
+                            name: '洗衣机',
+                            price: 19999.00,
+                            quantity: 1
+                        },
+                        {
+                            name: '电视机',
+                            price: 12999.00,
+                            quantity: 1
+                        },
+                        {
+                            name: '收音机',
+                            price: 2999.00,
+                            quantity: 1
+                        }
+                    ]
+                }
+            }
+        })
+    </script>
+</body>
+</html>
