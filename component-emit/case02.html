@@ -20,7 +20,7 @@
 <body>
     <!-- 爷爷 -->
     <div id="app">
-        <product-item :product="product" v-for="product in products"></product-item> 
+        <product-item :product="product" @change-quantity="counterProductQuatity(index,$event)" v-for="(product,index) in products" :key="product.idx+index"></product-item> 
     </div>
     <!-- 孙子 -->
     <template id="counter-button-quantity">
@@ -31,12 +31,13 @@
         <div class="product-item">
             <p>商品名称:{{product.name}}</p>
             <p>商品价格:{{product.price}}</p>
-            <!-- <div>商品数量: <counter-button-quantity :quantity="product.quantity"></counter-button-quantity></div> -->
-            <div>
-                商品数量: {{product.quantity | limitMin}}
-                <button @click="addQuantity">增加</button>
-                <button @click="subQuatity">减少</button>
-            </div>
+            <div>商品数量: <counter-button-quantity :quantity="product.quantity" @change-quantity="$emit('change-quantity',$event)"></counter-button-quantity></div>
+            <!-- <div> -->
+                <!-- 商品数量: {{product.quantity | limitMin}} -->
+                <!-- <button @click="addQuantity">增加</button> -->
+                <!-- <button @click="$emit('change-quantity')">减少</button> -->
+                <!-- <button @click="$emit('change-quantity',-1)">减少</button> -->
+            <!-- </div> -->
         </div>
     </template>
     <script>
@@ -44,7 +45,13 @@
          * 组件通信 上下原则
          * 父组件 <==> 子组件
          * 数据永远从上向下传递，通过props，数据流向永远是向下的
-         * 
+         * 子组件中可以通过$emit触发父组件的自定义事件
+         * 父组件作用域中 可以通过v-on绑定对应的自定义事件 对应到父组件的methods的方法上
+         * 子组件中通过$emit主动触发父组件的自定义事件event 父组件的自定义事件被触发调用父组件对应的methods方法执行
+         * 子组件可以通过$emit触发父组件的事件 给父组件的事件句柄传递参数
+         * 自定义事件的事件名称和使用 必须用kebab-case命名
+         * 自定义事件中参数中的$event就是$emit触发事件时传递的参数 第一个参数
+         * 自定义事件只能逐级向上传递
          */
         const CounterButtonQuantity = {
             props: {
@@ -60,26 +67,31 @@
             template: '#counter-button-quantity',
             methods:{
                 addQuantity() {
-
+                    this.$emit('change-quantity',1)
                 },
                 subQuatity() {
-
+                    this.$emit('change-quantity',-1)
                 }
             }
         }
         const ProductItem = {
             template: '#product-item',
             components:{CounterButtonQuantity},
-            props: {
+            props: {                                                                                                                                          
                 product:{
                     type: Object
-                    
                 }
             },
-            mothods: {
-                addQuantity() {
-
+            filters: {
+                limitMin(value) {
+                    return Math.max(0,value)
                 }
+            },
+            methods: {
+                // addQuantity() {
+                //     // 调用父组件的自定义事件 'change-quantity'
+                //     this.$emit('change-quantity',1)
+                // }
             }
         }
         const app = new Vue({
@@ -89,21 +101,29 @@
                 return {
                     products: [
                         {   
+                            idx:1,
                             name: '洗衣机',
                             price: 19999.00,
                             quantity: 1
                         },
                         {
+                            idx:2,
                             name: '电视机',
                             price: 12999.00,
                             quantity: 1
                         },
                         {
+                            idx:3,
                             name: '收音机',
                             price: 2999.00,
                             quantity: 1
                         }
                     ]
+                }
+            },
+            methods: {
+                counterProductQuatity(idx,$event) {
+                    this.products[idx].quantity += Number($event)
                 }
             }
         })

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>组件通信</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+        #app {
+            width: 80%;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .component {
+            width: 80%;
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid red;
+        }
+        input {
+            padding: 5px 20px;
+            margin: 20px 0;
+        }
+        .br-green {
+            border: 1px solid green;
+        }
+        .br-blue {
+            border: 1px solid blue;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <parent-component></parent-component>
+    </div>
+    <template id="parent">
+        <div class="component">
+            <h3>这里是父组件parent</h3>
+            <input type="text" v-model="message">
+            <p>我的信息内容：{{message}}</p>
+            <p>接收信息内容：{{childMsg}}</p>
+            <!-- <child-component :parent-message="message" @receive ="receiveMsg"></child-component> -->
+            <child-component v-model="childMsg" :parent-message="message"></child-component>
+        </div>
+    </template>
+
+    <template id="child">
+        <div class="component br-green">
+            <h3>这里是子组件child</h3>
+            <!-- <input type="text" v-model="message" @keyup="$emit('receive',message)"> -->
+            <input type="text"  @input="sendMsg">
+            <p>我的信息内容：{{message}}</p>
+            <p>接收信息内容：{{parentMessage}}</p>
+        </div>
+    </template>
+    <script>
+        /**
+         * v-model作为组件指令属性的时候绑定的值 是父组件的属性
+         * v-model在响应的时候会修改父组件对应绑定的属性
+         * 组件上的v-model是被组件内部的$emit(子组件的model.event)触发的
+         * 组件上的v-model触发了输入的时候，对应v-model绑定的父组件的属性值就会被修改
+         */
+
+        // props emit通信
+        const ChildComponent = {
+            template: "#child",
+            model:{
+                prop: 'parentMessage',
+                event: 'receive'
+            },
+            props: {
+                parentMessage: {
+                    type: String
+                }
+            },
+            data(){
+                return {
+                    message: ''
+                }
+            },
+            methods:{
+                sendMsg($event){
+                    this.message = $event.target.value
+                    this.$emit('receive',$event.target.value)
+                }
+            }
+        }
+
+        const ParentComponent = {
+            template: "#parent",
+            data(){
+                return {
+                    message:"",
+                    childMsg:"123"
+                }
+            },
+            components: {
+                ChildComponent
+            },
+            methods: {
+                receiveMsg($event) {
+                    this.childMsg = $event
+                }
+            }
+        }
+
+        const app = new Vue({
+            el: '#app',
+            data() {
+                return{}
+            },
+            components: {
+                ParentComponent
+            }
+        })
+    </script>
+</body>
+</html>
