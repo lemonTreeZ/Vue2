@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+        #app {
+            width: 80%;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .component {
+            width: 80%;
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid red;
+        }
+    
+    </style>
+</head>
+<body>
+    <div id="app">
+        <p>实例 root</p>
+        <parent-component></parent-component>
+    </div>
+    <template id="parent">
+        <div class="component">
+            <p>{{message}}</p>
+            <child-component>
+                <template>
+                    <p>default插槽</p>
+                </template>
+                <template v-slot:content>content插槽的内容</template>
+                <template #footer>footer插槽的内容</template>
+                <!-- <template v-slot:default="slotProps">{{slotProps.usertext.firstName}}</template> -->
+                <template #default="{usertext}">{{usertext.firstName}}</template>
+            </child-component>
+        </div>
+    </template>
+    <template id="child">
+        <div class="component">
+            <p>{{message}}</p>
+            <slot name="content"></slot>
+            <slot name="footer"></slot>
+            <!-- <slot v-bind:usertext="user">{{user.lastName}}</slot> -->
+            <slot :usertext="user">{{user.lastName}}</slot>
+        </div>
+    </template>
+    <script>
+        /**
+         * 插槽分类：匿名插槽、具名插槽、作用域插槽 
+         * 匿名插槽：slot语法
+         * 具名插槽：<slot>元素有一个特殊的特性：name ，这个特性可以用来定义额外的插槽,如果一个<slot>不带name属性的话，那么它的name默认为default
+         * 在向具名插槽提供内容的时候，我们可以在<template>元素上使用v-slot指令，并以参数的形式提供其名称
+         * 作用域插槽：可以在父组件中访问传递的值，把需要传递的内容绑到 <slot> 上，然后在父组件中用v-slot设置一个值来定义我们提供插槽的名字,也可以用解构赋值
+         */
+         const ChildComponent = {
+            name: 'child',
+            template:"#child",
+            data(){
+                return{
+                    message:"我是child组件",
+                    user:{
+                        firstName: 'first',
+                        lastName: 'last'
+                    }
+                }
+            }
+        }
+        const ParentComponent = {
+            name: 'parent',
+            template:"#parent",
+            data(){
+                return{
+                    message:"我是parent组件"
+                }
+            },
+            components:{ChildComponent}
+        }
+        
+        const app = new Vue({
+            el:'#app',
+            data(){
+                return{
+
+                }
+            },
+            components:{ParentComponent}
+        })
+    </script>
+</body>
+</html>
