@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动态组件参数</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .flex.flex-row {
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+        .flex-row img {
+            flex: 1;
+        }
+
+        #app {
+            width: 80%;
+        }
+        .list {
+            padding: 10px;
+            border: 1px solid red;
+        }
+        .list img {
+            width: 100px;
+        }
+        .item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #222;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="list">
+            <component :is="item.comp" :content="item.content" v-for="item in list"></component>
+        </div>
+    </div>
+    <template id="component-a">
+        <div class="item">
+            <h1 class="title">标题</h1>
+            <div class="flex flex-row">
+                <div class="pic-wrp">
+                    <img src="https://vue.docschina.org/images/logo.png" alt="!">
+                </div>
+                <div class="desc">
+                    <p>这是component-a组件</p>
+                    <p>{{content}}</p>
+                </div>
+            </div>
+        </div>
+    </template>
+    <template id="component-b">
+        <div class="item">
+            <div class="pic-wrap">
+                <img src="https://vue.docschina.org/images/logo.png" alt="!">
+                <img src="https://vue.docschina.org/images/logo.png" alt="!">
+                <img src="https://vue.docschina.org/images/logo.png" alt="!">
+            </div>
+            <h1>标题</h1>
+            <div class="desc">
+                <p>这是component-b组件</p>
+                <p>{{content}}</p>
+            </div>
+        </div>
+    </template>
+    <template id="component-c">
+        <div class="item flex flex-row">
+            <img src="https://vue.docschina.org/images/logo.png" alt="!">
+            <img src="https://vue.docschina.org/images/logo.png" alt="!">
+            <img src="https://vue.docschina.org/images/logo.png" alt="!">
+        </div>
+    </template>
+    <script>
+        const ComponentA = {
+            template: '#component-a',
+            props: {
+                content: {
+                    type: String
+                }
+            }
+        }
+
+        const ComponentB = {
+            template: '#component-b',
+            props: {
+                content: {
+                    type: String
+                }
+            }
+        }
+
+        const ComponentC = {
+            template: '#component-c'
+        }
+
+        const app = new Vue({
+            el: '#app',
+            components: {ComponentA,ComponentB,ComponentC},
+            data() {
+                return {
+                    message: 'hello',
+                    activeComponent: 'componentA',
+                    list: [
+                        {
+                            content:'我是形式A的组件内容',
+                            comp: 'ComponentA'
+                        },
+                        {
+                            content:'我是形式B的组件内容',
+                            comp: 'ComponentB'
+                        },
+                        {
+                            content:'我是形式C的组件内容',
+                            comp: 'ComponentC'
+                        },
+                    ]
+                }
+            },
+            methods: {
+             
+            }
+        })
+    </script>
+</body>
+</html>
