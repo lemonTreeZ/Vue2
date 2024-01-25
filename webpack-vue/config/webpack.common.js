@@ -35,7 +35,7 @@ module.exports = {
                 test: /\.styl(us)?$/,
                 use: [
                     "vue-style-loader",
-                    "style-loader",
+                    "style-loader",//插入css到模板html的head标签中生成style标签
                     "css-loader",
                     "stylus-loader"
                 ]
