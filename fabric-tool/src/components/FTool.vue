@@ -8,14 +8,17 @@
         <canvas id="canvas" width="1280" height="720"></canvas>
       </div>
       <div class="draw-btn-group">
-        <!-- <i class="draw-icon icon-back"></i> -->
-        <!-- <i class="draw-icon icon-mouse"></i> -->
-        <i class="draw-icon icon-circle"></i>
-        <i class="draw-icon icon-rect"></i>
+        <!-- <i class="draw-icon icon-back" @click = editDraw()></i> -->
+        <i class="draw-icon icon-mouse" @click = editDraw()></i>
+        <!-- <i class="draw-icon icon-circle"></i> -->
+        <i class="draw-icon icon-rect" @click="drawTool('rect')"></i>
         <i class="draw-icon icon-polygon"></i>
         <!-- <i class="draw-icon icon-pen"></i> -->
         <button @click="rebackCanvas">初始化画布</button>
-        <button @click="toolPen">钢笔工具</button>
+        <button @click="drawTool('FPoint')">画红点</button>
+        <button @click="drawTool('pen')">钢笔工具</button>
+        <button>直线</button>
+        <button>自由绘制</button>
       </div>
     </div>
   </div>
@@ -27,7 +30,8 @@ export default {
   name: 'FTool',
   data() {
     return {
-      fabricToolObj: null
+      fabricToolObj: null,
+      article:'https://www.cnblogs.com/huangcy/p/9559695.html'
     }
   },
   methods:{
@@ -39,8 +43,11 @@ export default {
     rebackCanvas() {
       this.fabricToolObj.rebackCanvas()
     },
-    toolPen() {
-
+    editDraw(){
+      this.fabricToolObj.selectionObj()
+    },
+    drawTool(type) {
+      this.fabricToolObj.drawType = type
     }
   },
   mounted() {

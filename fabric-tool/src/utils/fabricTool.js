@@ -1,12 +1,18 @@
 import { fabric } from "fabric"
+import {drawLabelRect, renderIcon, drawColorPoint} from './fabricShape'
+import {v4 as uv4} from 'uuid'
+const delIcon = require('./../assets/icon/del.png')
+
 export class fabricTool{
     constructor() {
-        this.drawType = false
+        this.drawType = ''
         this.isDrag = false
         this.optionType = 'point'
         this.mouseDownPos = {}
-        this.downPoint = {}
-        this.upPoint = {}
+        this.downPoint = null
+        this.isDrawing = false
+        this.upPoint = null
+        this.moveCount = 0
         this.canvas = new fabric.Canvas('canvas',{
             fireRightClick: true,
             stopContextMenu: true
@@ -40,7 +46,7 @@ export class fabricTool{
             this.mouseDownPos.y = e.e.clientY
         }
         this.downPoint = e.absolutePointer
-       
+        this.isDrawing = true
     }
 
     mouseMoveHandle(e) {
@@ -53,6 +59,10 @@ export class fabricTool{
             this.mouseDownPos.x = opt.clientX
             this.mouseDownPos.y = opt.clientY
         }
+        if(this.moveCount % 2 && !this.isDrawing) {
+            return
+        }
+        this.moveCount++
     }
 
     mouseUpHandle(e) {
@@ -61,20 +71,11 @@ export class fabricTool{
             this.canvas.setViewportTransform(this.canvas.viewportTransform)
             this.isDrag = false
         }
-        switch(this.drawType) {
-            case 'rect':
-                this.drawRect()
-                break
-            // case 'circle':
-            //     this.drawCircle()
-            //     break
-            // case 'pen':
-            //     this.drawPen()
-            //     break
-            // case 'free':
-            //     this.drawFree()
-            //     break
-        }
+        this.moveCount = 1
+        if(this.isDrawing) {this.startDraw()}
+        this.isDrawing = false
+        this.downPoint = null
+        this.upPoint = null
     }
 
     mouseWheelHandle(e) {
@@ -108,8 +109,54 @@ export class fabricTool{
         this.canvas.dispose()
     }
 
+    startDraw() {
+        switch(this.drawType) {
+            case 'rect':
+                this.drawRect()
+                break
+            case 'FPoint':
+                this.drawPoint('red')
+                break
+        }
+    }
+
     drawRect() {
-        
+        this.canvas.skipTargetFind = true
+        if(JSON.stringify(this.downPoint) === JSON.stringify(this.upPoint)) return
+        const top = Math.min(this.downPoint.y,this.upPoint.y)
+        const left = Math.min(this.downPoint.x,this.upPoint.x)
+        const width = Math.abs(this.downPoint.x - this.upPoint.x)
+        const height = Math.abs(this.downPoint.y - this.upPoint.y)
+        const id = uv4()
+        if(width < 2 || height < 2) return
+        let params = {
+            id,width,height,top,left,
+            drawType: "rect",
+            label:'测试'
+        }
+        let rect = drawLabelRect(params)
+        this.canvas.add(rect)
+    }
+
+    drawPoint(color) {
+        let params = {
+            id: uv4(),
+            color: color,
+            label:'测试',
+            drawType: 'point',
+            x: this.upPoint.x,
+            y: this.upPoint.y
+        }
+        let cp =  drawColorPoint(params)
+        this.canvas.add(cp)
+    }
+
+    setControlsStyle() {
+        fabric.Object.prototype.cornerStyle = "circle"
+        fabric.Object.prototype.cornerSize = 10
+        fabric.Object.prototype.cornerColor = "white"
+        fabric.Object.prototype.transparentCorners = false
+        this.createDelIcon(this.canvas)
     }
 
     drawCircle() {
@@ -122,6 +169,47 @@ export class fabricTool{
 
     drawFree() {
 
+    }
+
+    selectionObj() {
+        this.drawType = 'edit'
+        this.setControlsStyle()
+        this.canvas.skipTargetFind = false
+        this.canvas.getObjects().forEach(ele => {
+            ele.set('selectable',true)
+        })
+    }
+
+    deleteSelectedObj() {
+        let activeObj = this.canvas.getActiveObject()
+        if (activeObj) {
+            this.canvas.remove(activeObj)
+            this.canvas.renderAll()
+        }
+    }
+
+    createDelIcon(canvas) {
+        const deletecallback = (img, isError) => {
+            if (!isError) {
+                fabric.Object.prototype.controls.delete = new fabric.Control({
+                    x: 0,
+                    y: -0.5,
+                    offsetX: 28,
+                    offsetY: -20,
+                    cursorStyle: 'pointer',
+                    mouseUpHandler: () => {
+                        let activeObj = canvas.getActiveObject()
+                        if (activeObj) {
+                            canvas.remove(activeObj)
+                            canvas.renderAll()
+                        }
+                    },
+                    render: renderIcon(img._element, 0),
+                    cornerSize: 39
+                })
+            }
+        }
+        fabric.Image.fromURL(delIcon, deletecallback)
     }
 }
 
