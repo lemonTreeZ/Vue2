@@ -4,8 +4,8 @@
       <h2>图形标注</h2>
     </div> -->
     <div class="panel-content">
-      <div class="content-demo">
-        <canvas id="canvas" width="1280" height="720"></canvas>
+      <div id="content-demo" tabindex="100">
+        <canvas id="canvas" width="1280" height="720" tabindex="0"></canvas>
       </div>
       <div class="draw-btn-group">
         <!-- <i class="draw-icon icon-back" @click = editDraw()></i> -->
@@ -16,7 +16,7 @@
         <!-- <i class="draw-icon icon-pen"></i> -->
         <button @click="rebackCanvas">初始化画布</button>
         <button @click="drawTool('FPoint')">画红点</button>
-        <button @click="drawTool('pen')">钢笔工具</button>
+        <button @click="fabricToolObj.reSetpenTool(),drawTool('pen')">钢笔工具</button>
         <button>直线</button>
         <button>自由绘制</button>
       </div>
@@ -31,7 +31,8 @@ export default {
   data() {
     return {
       fabricToolObj: null,
-      article:'https://www.cnblogs.com/huangcy/p/9559695.html'
+      article:'https://www.cnblogs.com/huangcy/p/9559695.html',
+      test:"https://github.com/Chellyyy/Canvas_PS_PenTool"
     }
   },
   methods:{
@@ -66,6 +67,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
+  border: 1px solid red;
 }
 
 .panel-content {
