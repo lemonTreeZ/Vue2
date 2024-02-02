@@ -37,7 +37,7 @@ export class PathTool{
   addEndPoint(oed, ed) {
     for(let i = 0, len = this.length; i < len; i++){
       if(this[i] === oed){
-          this.splice(i + 1, 0, ed);
+          this.splice(i + 1, 0, ed)
       }
     }
   }

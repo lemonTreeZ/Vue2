@@ -16,7 +16,11 @@ export class fabricTool{
         this.isDrawing = false
         this.upPoint = null
         this.moveCount = 0
-        this.canvas = new fabric.Canvas('canvas',{
+        this.canvas = new fabric.Canvas('img-ctx',{
+            fireRightClick: true,
+            stopContextMenu: true
+        })
+        this.imgCanvas = new fabric.Canvas('img-canvas',{
             fireRightClick: true,
             stopContextMenu: true
         })
@@ -28,13 +32,13 @@ export class fabricTool{
             isNewEndPoint: false,
             currentEndPoint: null,
             draggingControlPoint: null,
-            editCpBalance: false
+            editCpBalance: false,
+            isOver: false
         },
-        this.keyBoard = document.getElementById("content-demo")
+        this.keyBoard = document.querySelector(".content-demo")
     }
 
-    initFabricTool(imgUrl) {
-        this.setBackImg(imgUrl)
+    initFabricTool() {
         this.canvas.on('mouse:down',(e) => {this.mouseDownHandle(e)})
         this.canvas.on('mouse:up',(e) => {this.mouseUpHandle(e)})
         this.canvas.on('mouse:move',(e) => {this.mouseMoveHandle(e)})
@@ -44,16 +48,20 @@ export class fabricTool{
     setBackImg(imgUrl) {
         fabric.Image.fromURL(imgUrl,(img) => {
             img.set({
-                scaleX: this.canvas.width / img.width,
-                scaleY: this.canvas.height / img.height,
+                scaleX: this.imgCanvas.width / img.width,
+                scaleY: this.imgCanvas.height / img.height,
                 left: 0,
                 top: 0
             })
-            this.canvas.setBackgroundImage(img,this.canvas.renderAll.bind(this.canvas))
+            this.imgCanvas.setBackgroundImage(img,this.imgCanvas.renderAll.bind(this.imgCanvas))
         })
+        this.initFabricTool()
     } 
 
     mouseDownHandle(e){
+        // if(this.drawType === ''|| this.isDrag) {
+        //     return
+        // }
         if(e.e.altKey) {
             this.isDrag = true
             this.mouseDownPos.x = e.e.clientX
@@ -63,16 +71,26 @@ export class fabricTool{
         this.isDrawing = true
         if(this.drawType === 'pen') {
             this.keyBoard.addEventListener('keydown', (e) => {this.keyDownHandle(e)})
+            if(this.penTool.paths.length >= 1 && this.penTool.isOver) {
+                this.penTool.paths.push(new PathTool())
+            }
             this.penDraw()
         }
     }
 
     mouseMoveHandle(e) {
+        // if(this.drawType === ''|| this.isDrag) {
+        //     return
+        // }
         if(this.isDrag) {
             let opt = e.e
-            let vpt = this.canvas.viewportTransform
+            let vpt = this.imgCanvas.viewportTransform
+            let cvpt = this.canvas.viewportTransform
             vpt[4] += opt.clientX - this.mouseDownPos.x
             vpt[5] += opt.clientY - this.mouseDownPos.y
+            cvpt[4] += opt.clientX - this.mouseDownPos.x
+            cvpt[5] += opt.clientY - this.mouseDownPos.y
+            this.imgCanvas.requestRenderAll()
             this.canvas.requestRenderAll()
             this.mouseDownPos.x = opt.clientX
             this.mouseDownPos.y = opt.clientY
@@ -87,6 +105,7 @@ export class fabricTool{
     }
 
     mouseUpHandle(e) {
+        this.isDrag = false
         this.upPoint = e.absolutePointer
         if(this.isDrag) {
             this.canvas.setViewportTransform(this.canvas.viewportTransform)
@@ -96,14 +115,7 @@ export class fabricTool{
         if(this.isDrawing) {this.startDraw()}
         this.isDrawing = false
         if(this.drawType === 'pen') {
-            this.penTool.dragging = false
-            if(this.penTool.draggingControlPoint){
-                if(this.penTool.draggingControlPoint.counterpart) {
-                  delete this.penTool.draggingControlPoint.counterpart.staticDistance
-                }
-                delete this.penTool.draggingControlPoint.counterpart
-                this.penTool.draggingControlPoint = false
-              }
+            this.penMouseUp()
         }
         this.downPoint = null
         this.upPoint = null
@@ -111,11 +123,18 @@ export class fabricTool{
 
     mouseWheelHandle(e) {
         let zoomDirection = e.e.deltaY
-        let zoom = this.canvas.getZoom()
+        let zoom = this.imgCanvas.getZoom()
         zoom *= 0.999 ** zoomDirection
         if (zoom > 20) zoom = 20
         if (zoom < 0.01) zoom = 0.01
         zoom *= 0.999 ** zoomDirection
+        this.imgCanvas.zoomToPoint(
+            {
+              x: e.e.offsetX, 
+              y: e.e.offsetY  
+            },
+            zoom 
+        )
         this.canvas.zoomToPoint(
             {
               x: e.e.offsetX, 
@@ -131,15 +150,24 @@ export class fabricTool{
               e.preventDefault()
               this.deleteEndPoint()
               this.renderer()
+              break
+            case 18:
+              e.preventDefault()
+            //   this.penMove
         }
     }
 
     rebackCanvas() {
         this.canvas.setZoom(1)
+        this.imgCanvas.setZoom(1)
         let vpt = this.canvas.viewportTransform
+        let mvpt = this.imgCanvas.viewportTransform
+        mvpt[4] = 0
+        mvpt[5] = 0
         vpt[4] = 0
         vpt[5] = 0
         this.canvas.requestRenderAll()
+        this.imgCanvas.requestRenderAll()
     }
 
     destroy() {
@@ -250,6 +278,7 @@ export class fabricTool{
 
     reSetpenTool() {
         this.penTool.paths = []
+        this.pathPoints = []
         this.penTool.paths.push(new PathTool())
         this.penTool.editCpBalance = false
         this.penTool.dragging = false
@@ -258,17 +287,18 @@ export class fabricTool{
         this.penTool.draggingControlPoint = null 
         ControlPoint.prototype.ctx = this.penTool.ctx
         EndPoint.prototype.ctx = this.penTool.ctx
-        EndPoint.prototype.canvas = this.canvas 
+        EndPoint.prototype.canvas = this 
     }
 
     penDraw() {
+        this.canvas.skipTargetFind = true
+        this.penTool.isOver = false
         let location = this.downPoint
         let selectedPath = this.getSelectedPath()
         this.penTool.dragging = true
         this.penTool.isNewEndPoint = false
         this.penTool.draggingControlPoint = false
-        this.penTool.currentEndPoint = this.isExistPoint(location.X,location.y)
-        console.log("this.penTool.currentEndPoint",this.penTool.currentEndPoint)
+        this.penTool.currentEndPoint = this.isExistPoint(location.x,location.y)
         this.removeSelectedEndPoint()
         if(this.penTool.currentEndPoint) {
             this.penTool.currentEndPoint.selected = true
@@ -280,7 +310,9 @@ export class fabricTool{
                 this.penTool.isNewEndPoint = true
             }
             if(!this.penTool.draggingControlPoint && this.penTool.currentEndPoint === this.penTool.paths[this.penTool.paths.length -1][0] && this.penTool.paths[this.penTool.paths.length -1].length > 2) {
-                this.createPath()
+                // this.createPath()
+                this.penTool.paths[this.penTool.paths.length - 1].isClose = true
+                this.penTool.isOver = true
             }
         } else {
             this.penTool.currentEndPoint = this.createEndPoint(location.x, location.y)
@@ -328,6 +360,17 @@ export class fabricTool{
         this.renderer()
     }
 
+    penMouseUp() {
+        this.penTool.dragging = false
+        if(this.penTool.draggingControlPoint) {
+            if(this.penTool.draggingControlPoint.counterpart) {
+               delete this.penTool.draggingControlPoint.counterpart.staticDistance
+            }
+            delete this.penTool.draggingControlPoint.counterpart
+            this.penTool.draggingControlPoint = false
+        }
+    }
+
     getSelectedPath() {
         for(let i = 0, len1 = this.penTool.paths.length; i < len1; i++){
             for(let j = 0, len2 = this.penTool.paths[i].length; j < len2; j++){
@@ -346,7 +389,6 @@ export class fabricTool{
         let cep, i = 0, len
         for(len = this.penTool.paths.length; i< len; i++){
             cep = this.penTool.paths[i].isInPoint(x, y)
-            console.log(cep);
             if(cep){
                 if(cep.cp instanceof ControlPoint){
                     this.penTool.draggingControlPoint = cep.cp
@@ -393,6 +435,7 @@ export class fabricTool{
                 this.bezierCurveTo(prev_ep,ep,ctx)
             }
         })
+      
     }
 
     bezierCurveTo(prev_ep,ep,ctx) {
@@ -421,7 +464,14 @@ export class fabricTool{
             i--
           }
         }
-      }
+    }
+
+    getCanvasObjects() {
+        console.log("hai");
+        this.canvas.getObjects().forEach(e => {
+            console.log(e);
+        })
+    }
 }
 
  

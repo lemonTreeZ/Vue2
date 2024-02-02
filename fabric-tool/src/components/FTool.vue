@@ -4,21 +4,25 @@
       <h2>图形标注</h2>
     </div> -->
     <div class="panel-content">
-      <div id="content-demo" tabindex="100">
-        <canvas id="canvas" width="1280" height="720" tabindex="0"></canvas>
+      <div class="content-demo" tabindex="100">
+        <canvas id="img-canvas" width="950" height="600" tabindex="0"></canvas>
+        <canvas id="img-ctx" width="950" height="600" tabindex="1"></canvas>
       </div>
       <div class="draw-btn-group">
         <!-- <i class="draw-icon icon-back" @click = editDraw()></i> -->
-        <i class="draw-icon icon-mouse" @click = editDraw()></i>
+        <!-- <i class="draw-icon icon-mouse" @click = editDraw()></i> -->
         <!-- <i class="draw-icon icon-circle"></i> -->
-        <i class="draw-icon icon-rect" @click="drawTool('rect')"></i>
-        <i class="draw-icon icon-polygon"></i>
+        <!-- <i class="draw-icon icon-rect" @click="drawTool('rect')"></i> -->
+        <!-- <i class="draw-icon icon-polygon"></i> -->
         <!-- <i class="draw-icon icon-pen"></i> -->
-        <button @click="rebackCanvas">初始化画布</button>
+        <button @click = editDraw()>图形编辑</button>
+        <button @click = "drawTool('rect')">矩形绘制</button>
+        <button @click="rebackCanvas()">初始化画布</button>
         <button @click="drawTool('FPoint')">画红点</button>
         <button @click="fabricToolObj.reSetpenTool(),drawTool('pen')">钢笔工具</button>
         <button>直线</button>
         <button>自由绘制</button>
+        <button @click="fabricToolObj.getCanvasObjects()">获取画布信息</button>
       </div>
     </div>
   </div>
@@ -39,7 +43,7 @@ export default {
     init() {
       let img = 'https://clubimg.club.vmall.com/data/attachment/forum/202108/22/182949mtoxhphast0upmq0.png'
       this.fabricToolObj = new fabricTool()
-      this.fabricToolObj.initFabricTool(img)
+      this.fabricToolObj.setBackImg(img)
     },
     rebackCanvas() {
       this.fabricToolObj.rebackCanvas()
@@ -63,11 +67,18 @@ export default {
   height: 100%;
 }
 
+
 .content-demo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  border: 1px solid red;
+  width: 50%;
+  height: 90%;
+  position: relative;
+}
+.content-demo:focus {
+  border: none;
+}
+
+:deep(.canvas-container) {
+  position: absolute !important;
 }
 
 .panel-content {
@@ -75,14 +86,12 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-}
-
-canvas {
-  border: 1px solid red;
+  height: 700px;
 }
 
 .draw-btn-group {
-  width: 1270px;
+  width: 50%;
+  height: 5%;
   margin-top: 10px;
   display: flex;
   align-items: center;
@@ -118,5 +127,9 @@ i {
 }
 .icon-pen {
   background-image: url(./../assets/icon/7.png)
+}
+
+#img-ctx {
+  border: 1px solid #ccc;
 }
 </style>
