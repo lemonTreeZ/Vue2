@@ -19,7 +19,7 @@
         <button @click = "drawTool('rect')">矩形绘制</button>
         <button @click="rebackCanvas()">初始化画布</button>
         <button @click="drawTool('FPoint')">画红点</button>
-        <button @click="fabricToolObj.reSetpenTool(),drawTool('pen')">钢笔工具</button>
+        <button @click="drawTool('pen')">钢笔工具</button>
         <button>直线</button>
         <button>自由绘制</button>
         <button @click="fabricToolObj.getCanvasObjects()">获取画布信息</button>
@@ -29,14 +29,14 @@
 </template>
 
 <script>
-import {fabricTool} from './../utils/fabricTool.js'
+import {fabricTool} from '../utils/fabricTool.js'
 export default {
   name: 'FTool',
   data() {
     return {
       fabricToolObj: null,
       article:'https://www.cnblogs.com/huangcy/p/9559695.html',
-      test:"https://github.com/Chellyyy/Canvas_PS_PenTool"
+      test:"https://juejin.cn/post/6897134376312635406"
     }
   },
   methods:{

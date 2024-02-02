@@ -1,9 +1,6 @@
 import { fabric } from "fabric"
 import {drawLabelRect, renderIcon, drawColorPoint} from './fabricShape'
 import {v4 as uv4} from 'uuid'
-import { ControlPoint } from './controlPoint'
-import { EndPoint } from './endPoint'
-import {PathTool} from './pathTool'
 const delIcon = require('./../assets/icon/del.png')
 
 export class fabricTool{
@@ -24,18 +21,13 @@ export class fabricTool{
             fireRightClick: true,
             stopContextMenu: true
         })
-        this.penTool = {
-            ctx: this.canvas.getContext('2d'),
-            stroke_color: '#ffc107',
-            paths: [],
-            dragging: false,
-            isNewEndPoint: false,
-            currentEndPoint: null,
-            draggingControlPoint: null,
-            editCpBalance: false,
-            isOver: false
-        },
         this.keyBoard = document.querySelector(".content-demo")
+        this.penTool = {
+            pointPosition: [],
+            path: [],
+            str: '',
+            pointArray :[]
+        }
     }
 
     initFabricTool() {
@@ -59,9 +51,6 @@ export class fabricTool{
     } 
 
     mouseDownHandle(e){
-        // if(this.drawType === ''|| this.isDrag) {
-        //     return
-        // }
         if(e.e.altKey) {
             this.isDrag = true
             this.mouseDownPos.x = e.e.clientX
@@ -70,18 +59,19 @@ export class fabricTool{
         this.downPoint = e.absolutePointer
         this.isDrawing = true
         if(this.drawType === 'pen') {
-            this.keyBoard.addEventListener('keydown', (e) => {this.keyDownHandle(e)})
-            if(this.penTool.paths.length >= 1 && this.penTool.isOver) {
-                this.penTool.paths.push(new PathTool())
-            }
+           if(this.penTool.str && this.penTool.str.indexOf('z') !== -1){
+            this.removePoint()
             this.penDraw()
+           } else if(e.target&&this.penTool.pointArray[0] && e.target.id == this.penTool.pointArray[0].id) {
+                this.penFinish()
+            }else{
+                if(this.canvas.getActiveObject()) return
+                this.penDraw()
+            }
         }
     }
 
     mouseMoveHandle(e) {
-        // if(this.drawType === ''|| this.isDrag) {
-        //     return
-        // }
         if(this.isDrag) {
             let opt = e.e
             let vpt = this.imgCanvas.viewportTransform
@@ -114,9 +104,6 @@ export class fabricTool{
         this.moveCount = 1
         if(this.isDrawing) {this.startDraw()}
         this.isDrawing = false
-        if(this.drawType === 'pen') {
-            this.penMouseUp()
-        }
         this.downPoint = null
         this.upPoint = null
     }
@@ -151,9 +138,6 @@ export class fabricTool{
               this.deleteEndPoint()
               this.renderer()
               break
-            case 18:
-              e.preventDefault()
-            //   this.penMove
         }
     }
 
@@ -276,201 +260,94 @@ export class fabricTool{
         fabric.Image.fromURL(delIcon, deletecallback)
     }
 
-    reSetpenTool() {
-        this.penTool.paths = []
-        this.pathPoints = []
-        this.penTool.paths.push(new PathTool())
-        this.penTool.editCpBalance = false
-        this.penTool.dragging = false
-        this.penTool.isNewEndPoint = false  
-        this.penTool.currentEndPoint = null
-        this.penTool.draggingControlPoint = null 
-        ControlPoint.prototype.ctx = this.penTool.ctx
-        EndPoint.prototype.ctx = this.penTool.ctx
-        EndPoint.prototype.canvas = this 
-    }
-
     penDraw() {
-        this.canvas.skipTargetFind = true
-        this.penTool.isOver = false
-        let location = this.downPoint
-        let selectedPath = this.getSelectedPath()
-        this.penTool.dragging = true
-        this.penTool.isNewEndPoint = false
-        this.penTool.draggingControlPoint = false
-        this.penTool.currentEndPoint = this.isExistPoint(location.x,location.y)
-        this.removeSelectedEndPoint()
-        if(this.penTool.currentEndPoint) {
-            this.penTool.currentEndPoint.selected = true
-            if(this.penTool.editCpBalance && !this.penTool.draggingControlPoint) {
-                let cep = this.penTool.currentEndPoint
-                cep.cpBalance = true
-                cep.cp0.x = cep.cp1.x = cep.x
-                cep.cp0.y = cep.cp1.y = cep.y
-                this.penTool.isNewEndPoint = true
-            }
-            if(!this.penTool.draggingControlPoint && this.penTool.currentEndPoint === this.penTool.paths[this.penTool.paths.length -1][0] && this.penTool.paths[this.penTool.paths.length -1].length > 2) {
-                // this.createPath()
-                this.penTool.paths[this.penTool.paths.length - 1].isClose = true
-                this.penTool.isOver = true
-            }
-        } else {
-            this.penTool.currentEndPoint = this.createEndPoint(location.x, location.y)
-            this.penTool.isNewEndPoint = true
-            if(this.penTool.editCpBalance && selectedPath) {
-                selectedPath.path.addEndPoint(selectedPath.ep, this.penTool.currentEndPoint)
-            } else {
-                this.penTool.paths[this.penTool.paths.length - 1].push(this.penTool.currentEndPoint)
-            }
+        let id = new Date().getTime() + Math.random() 
+        let circle = new fabric.Circle({
+          radius: 3,
+          fill: 'red',
+          left: this.downPoint.x,
+          top: this.downPoint.y,
+          selectable: false,
+          hasBorders: false,
+          hasControls: false,
+          originX: 'center',
+          originY: 'center',
+          id: id
+        })
+        this.canvas.add(circle)
+        this.penTool.pointPosition.push({
+          x: this.downPoint.x,
+          y: this.downPoint.y
+        })
+        if (this.penTool.pointPosition.length == 1) {
+          this.penTool.str = 'M' + this.penTool.pointPosition[0].x + ' ' + this.penTool.pointPosition[0].y
+          this.penTool.path = new fabric.Path(this.penTool.str)
+          this.penTool.path.set({
+            fill: 'blue',
+            selectable: false,
+            hasBorders: false,
+            hasControls: false,
+            evented: false
+          })
+          this.canvas.add(this.penTool.path)
+          this.penTool.pointArray.push(circle)
         }
-        this.renderer()
+        if (this.penTool.pointPosition.length <= 1) return
+        let length = this.penTool.pointPosition.length - 1
+        this.canvas.remove(this.penTool.path) 
+        this.penTool.str = this.penTool.str + 'L' + this.penTool.pointPosition[length].x + ' ' + this.penTool.pointPosition[length].y // 路径拼接
+        this.penTool.path = new fabric.Path(this.penTool.str)
+        this.penTool.path.set({
+          fill: 'green',
+          strokeWidth: 1.5,
+          stroke: '#1a80ff',
+          selectable: true,
+          hasBorders: false,
+          hasControls: false,
+          evented: false
+  
+        })
+        this.canvas.add(this.penTool.path)
+        this.canvas.renderAll()
+        this.penTool.pointArray.push(circle)
     }
 
     penMove(e) {
-        e.e.preventDefault()
-        if(!this.penTool.dragging) {
-            return
-        }
-        let location = e.absolutePointer
-        let ced = this.penTool.currentEndPoint
-        if(this.penTool.isNewEndPoint){
-            ced.cp1.x = location.x
-            ced.cp1.y = location.y
-            ced.cp0.x = ced.x * 2 - location.x
-            ced.cp0.y = ced.y * 2 - location.y
-        } else if (this.penTool.draggingControlPoint){
-            if(this.penTool.editCpBalance){
-                ced.cpBalance = false
-            }
-            this.penTool.draggingControlPoint.x = location.x
-            this.penTool.draggingControlPoint.y = location.y
-            ced.calculateControlPoint(location.x, location.y, this.penTool.draggingControlPoint)
-        } else {
-            let offset = {
-              x: location.x - ced.x,
-              y: location.y - ced.y
-            }
-            ced.x = location.x
-            ced.y = location.y
-            ced.cp1.x += offset.x
-            ced.cp1.y += offset.y
-            ced.cp0.x += offset.x
-            ced.cp0.y += offset.y
-        }
-        this.renderer()
+        console.log(e)
     }
 
-    penMouseUp() {
-        this.penTool.dragging = false
-        if(this.penTool.draggingControlPoint) {
-            if(this.penTool.draggingControlPoint.counterpart) {
-               delete this.penTool.draggingControlPoint.counterpart.staticDistance
-            }
-            delete this.penTool.draggingControlPoint.counterpart
-            this.penTool.draggingControlPoint = false
-        }
-    }
-
-    getSelectedPath() {
-        for(let i = 0, len1 = this.penTool.paths.length; i < len1; i++){
-            for(let j = 0, len2 = this.penTool.paths[i].length; j < len2; j++){
-              if(this.penTool.paths[i][j].selected){
-                return {
-                  path: this.penTool.paths[i],
-                  ep: this.penTool.paths[i][j]
-                }
-              }
-            }
-        }
-        return null
-    }
-
-    isExistPoint(x,y) {
-        let cep, i = 0, len
-        for(len = this.penTool.paths.length; i< len; i++){
-            cep = this.penTool.paths[i].isInPoint(x, y)
-            if(cep){
-                if(cep.cp instanceof ControlPoint){
-                    this.penTool.draggingControlPoint = cep.cp
-                }
-                return cep.ep
-            }
-        }
-        return null
-    }
-
-    removeSelectedEndPoint() {
-        this.penTool.paths.forEach((path) => {
-            path.removeSelected()
+    penFinish() {
+        this.canvas.remove(this.penTool.path)
+        this.penTool.pointPosition.push({
+            x: this.penTool.pointPosition[0].x,
+            y: this.penTool.pointPosition[0].y
         })
-    }
-
-    createPath() {
-        this.penTool.paths[this.penTool.paths.length - 1].isClose = true
-        this.penTool.paths.push(new PathTool())
-    }
-
-    createEndPoint(x,y) {
-        let ep = new EndPoint(x, y)
-        ep.selected = true
-        return ep
-    }
-
-    renderer() {
-        let ep, prev_ep, ctx = this.penTool.ctx
-        this.penTool.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-        this.penTool.paths.forEach((path) => {
-            let length = path.length
-            for(let i = 0; i < length; i++) {
-                ep = path[i]
-                ep.printControlPoints()
-                if(i > 0) {
-                    prev_ep = path[i - 1]
-                    this.bezierCurveTo(prev_ep,ep,ctx)
-                }
-            }
-            if(path.isClose) {
-                prev_ep = path[length - 1]
-                ep = path[0]
-                this.bezierCurveTo(prev_ep,ep,ctx)
-            }
+        this.penTool.str = this.penTool.str + 'z'
+        this.penTool.path = new fabric.Path(this.penTool.str)
+        this.penTool.path.set({
+            fill: '#7c4529',
+            strokeWidth: 1.5,
+            stroke: '#1a80ff'
         })
-      
+        this.canvas.add(this.penTool.path)
+        this.canvas.renderAll()
     }
 
-    bezierCurveTo(prev_ep,ep,ctx) {
-        ctx.save()
-        ctx.beginPath()
-        ctx.strokeStyle = this.penTool.stroke_color
-        ctx.lineWidth = 2
-        ctx.moveTo(prev_ep.x, prev_ep.y)
-        ctx.bezierCurveTo(
-            prev_ep.cp1.x, prev_ep.cp1.y,
-            ep.cp0.x, ep.cp0.y,
-            ep.x, ep.y
-        )
-        // ctx.quadraticCurveTo(prev_ep.cp1.x, prev_ep.cp1.y, ep.x, ep.y)
-        ctx.stroke()
-        ctx.restore()
-    }
-
-    deleteEndPoint() {
-        let paths = this.penTool.paths
-        for(let i = 0, len = paths.length; i < len; i++){
-          paths[i].deleteSelected()
-          if(paths[i].length === 0 && (i + 1 !== len)) {
-            paths.splice(i, 1)
-            len = paths.length
-            i--
-          }
+    removePoint() {
+        for (let item of this.penTool.pointArray) {
+          this.canvas.remove(item)
         }
+        this.penTool.str = ''
+        this.penTool.pointArray = []
+        this.penTool.pointPosition = []
+        this.penTool.path.set({
+          stroke: null, 
+        })
+        this.canvas.renderAll()
     }
 
     getCanvasObjects() {
-        console.log("hai");
-        this.canvas.getObjects().forEach(e => {
-            console.log(e);
-        })
+
     }
 }
 
