@@ -6,7 +6,7 @@ import { EndPoint } from './endPoint'
 import {PathTool} from './pathTool'
 const delIcon = require('./../assets/icon/del.png')
 
-export class fabricToolPen{
+export class fabricTool{
     constructor() {
         this.drawType = ''
         this.isDrag = false
@@ -59,9 +59,6 @@ export class fabricToolPen{
     } 
 
     mouseDownHandle(e){
-        // if(this.drawType === ''|| this.isDrag) {
-        //     return
-        // }
         if(e.e.altKey) {
             this.isDrag = true
             this.mouseDownPos.x = e.e.clientX
@@ -79,9 +76,6 @@ export class fabricToolPen{
     }
 
     mouseMoveHandle(e) {
-        // if(this.drawType === ''|| this.isDrag) {
-        //     return
-        // }
         if(this.isDrag) {
             let opt = e.e
             let vpt = this.imgCanvas.viewportTransform
@@ -310,7 +304,6 @@ export class fabricToolPen{
                 this.penTool.isNewEndPoint = true
             }
             if(!this.penTool.draggingControlPoint && this.penTool.currentEndPoint === this.penTool.paths[this.penTool.paths.length -1][0] && this.penTool.paths[this.penTool.paths.length -1].length > 2) {
-                // this.createPath()
                 this.penTool.paths[this.penTool.paths.length - 1].isClose = true
                 this.penTool.isOver = true
             }
@@ -333,6 +326,7 @@ export class fabricToolPen{
         }
         let location = e.absolutePointer
         let ced = this.penTool.currentEndPoint
+        
         if(this.penTool.isNewEndPoint){
             ced.cp1.x = location.x
             ced.cp1.y = location.y
@@ -369,6 +363,14 @@ export class fabricToolPen{
             delete this.penTool.draggingControlPoint.counterpart
             this.penTool.draggingControlPoint = false
         }
+        this.penTool.paths.forEach((path) => {
+            let length = path.length
+            for(let i = 0; i < length; i++) {
+               let  ep = path[i]
+                ep.printControlPoints()
+        
+            }
+        })
     }
 
     getSelectedPath() {
@@ -435,7 +437,7 @@ export class fabricToolPen{
                 this.bezierCurveTo(prev_ep,ep,ctx)
             }
         })
-      
+       
     }
 
     bezierCurveTo(prev_ep,ep,ctx) {

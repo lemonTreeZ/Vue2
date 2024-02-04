@@ -1,6 +1,6 @@
 const pointStyle = {
   control_point_radius: 4,
-  control_point_color: '#005cf9'
+  control_point_color: 'red'
 }
 
 /**
@@ -35,7 +35,6 @@ export class ControlPoint {
     if(this.ctx.isPointInPath(x, y)) {
       return true
     }
-    // console.log("current",this.ctx.isPointInPath(x, y))
     return false
   }
 }

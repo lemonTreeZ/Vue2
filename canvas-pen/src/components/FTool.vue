@@ -9,11 +9,17 @@
         <canvas id="img-ctx" width="950" height="600" tabindex="1"></canvas>
       </div>
       <div class="draw-btn-group">
+        <!-- <i class="draw-icon icon-back" @click = editDraw()></i> -->
+        <!-- <i class="draw-icon icon-mouse" @click = editDraw()></i> -->
+        <!-- <i class="draw-icon icon-circle"></i> -->
+        <!-- <i class="draw-icon icon-rect" @click="drawTool('rect')"></i> -->
+        <!-- <i class="draw-icon icon-polygon"></i> -->
+        <!-- <i class="draw-icon icon-pen"></i> -->
         <button @click = editDraw()>图形编辑</button>
         <button @click = "drawTool('rect')">矩形绘制</button>
         <button @click="rebackCanvas()">初始化画布</button>
         <button @click="drawTool('FPoint')">画红点</button>
-        <button @click="drawTool('pen')">钢笔工具</button>
+        <button @click="fabricToolObj.reSetpenTool();drawTool('pen')">钢笔工具</button>
         <button>直线</button>
         <button>自由绘制</button>
         <button @click="fabricToolObj.getCanvasObjects()">获取画布信息</button>

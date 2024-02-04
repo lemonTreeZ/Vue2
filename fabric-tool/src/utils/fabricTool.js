@@ -1,7 +1,6 @@
 import { fabric } from "fabric"
-import {drawLabelRect, renderIcon, drawColorPoint} from './fabricShape'
+import {drawLabelRect} from './fabricShape'
 import {v4 as uv4} from 'uuid'
-const delIcon = require('./../assets/icon/del.png')
 
 export class fabricTool{
     constructor() {
@@ -23,10 +22,8 @@ export class fabricTool{
         })
         this.keyBoard = document.querySelector(".content-demo")
         this.penTool = {
-            pointPosition: [],
-            path: [],
-            str: '',
-            pointArray :[]
+            points:[],
+            pathStr:''
         }
     }
 
@@ -59,15 +56,7 @@ export class fabricTool{
         this.downPoint = e.absolutePointer
         this.isDrawing = true
         if(this.drawType === 'pen') {
-           if(this.penTool.str && this.penTool.str.indexOf('z') !== -1){
-            this.removePoint()
-            this.penDraw()
-           } else if(e.target&&this.penTool.pointArray[0] && e.target.id == this.penTool.pointArray[0].id) {
-                this.penFinish()
-            }else{
-                if(this.canvas.getActiveObject()) return
-                this.penDraw()
-            }
+           this.penDraw()
         }
     }
 
@@ -103,6 +92,9 @@ export class fabricTool{
         }
         this.moveCount = 1
         if(this.isDrawing) {this.startDraw()}
+        if(this.drawType === 'pen') {
+            this.penUp()
+        }
         this.isDrawing = false
         this.downPoint = null
         this.upPoint = null
@@ -166,9 +158,7 @@ export class fabricTool{
             case 'rect':
                 this.drawRect()
                 break
-            case 'FPoint':
-                this.drawPoint('red')
-                break
+          
         }
     }
 
@@ -190,162 +180,91 @@ export class fabricTool{
         this.canvas.add(rect)
     }
 
-    drawPoint(color) {
-        let params = {
-            id: uv4(),
-            color: color,
-            label:'测试',
-            drawType: 'point',
-            x: this.upPoint.x,
-            y: this.upPoint.y
-        }
-        let cp =  drawColorPoint(params)
-        this.canvas.add(cp)
-    }
 
-    setControlsStyle() {
-        fabric.Object.prototype.cornerStyle = "circle"
-        fabric.Object.prototype.cornerSize = 10
-        fabric.Object.prototype.cornerColor = "white"
-        fabric.Object.prototype.transparentCorners = false
-        this.createDelIcon(this.canvas)
-    }
-
-    drawCircle() {
-
-    }
-
-    drawFree() {
-
-    }
-
-    selectionObj() {
-        this.drawType = 'edit'
-        this.setControlsStyle()
-        this.canvas.skipTargetFind = false
-        this.canvas.getObjects().forEach(ele => {
-            ele.set('selectable',true)
-        })
-    }
-
-    deleteSelectedObj() {
-        let activeObj = this.canvas.getActiveObject()
-        if (activeObj) {
-            this.canvas.remove(activeObj)
-            this.canvas.renderAll()
-        }
-    }
-
-    createDelIcon(canvas) {
-        const deletecallback = (img, isError) => {
-            if (!isError) {
-                fabric.Object.prototype.controls.delete = new fabric.Control({
-                    x: 0,
-                    y: -0.5,
-                    offsetX: 28,
-                    offsetY: -20,
-                    cursorStyle: 'pointer',
-                    mouseUpHandler: () => {
-                        let activeObj = canvas.getActiveObject()
-                        if (activeObj) {
-                            canvas.remove(activeObj)
-                            canvas.renderAll()
-                        }
-                    },
-                    render: renderIcon(img._element, 0),
-                    cornerSize: 39
-                })
-            }
-        }
-        fabric.Image.fromURL(delIcon, deletecallback)
+    initPen(){
+      
     }
 
     penDraw() {
-        let id = new Date().getTime() + Math.random() 
-        let circle = new fabric.Circle({
-          radius: 3,
-          fill: 'red',
-          left: this.downPoint.x,
-          top: this.downPoint.y,
-          selectable: false,
-          hasBorders: false,
-          hasControls: false,
-          originX: 'center',
-          originY: 'center',
-          id: id
+        let p = new fabric.Circle({
+            id: uv4(),
+            radius: 4,
+            stroke: 'red',
+            fill: 'green',
+            top: this.downPoint.y,
+            left: this.downPoint.x,
+            hasControls: false
         })
-        this.canvas.add(circle)
-        this.penTool.pointPosition.push({
-          x: this.downPoint.x,
-          y: this.downPoint.y
-        })
-        if (this.penTool.pointPosition.length == 1) {
-          this.penTool.str = 'M' + this.penTool.pointPosition[0].x + ' ' + this.penTool.pointPosition[0].y
-          this.penTool.path = new fabric.Path(this.penTool.str)
-          this.penTool.path.set({
-            fill: 'blue',
-            selectable: false,
-            hasBorders: false,
-            hasControls: false,
-            evented: false
-          })
-          this.canvas.add(this.penTool.path)
-          this.penTool.pointArray.push(circle)
+
+        this.canvas.add(p)
+        let controls = this.createControlPoints(this.downPoint)
+        let point = {
+            x: this.downPoint.x,
+            y: this.downPoint.y,
+            p0: controls.p0,
+            p1: controls.p1
         }
-        if (this.penTool.pointPosition.length <= 1) return
-        let length = this.penTool.pointPosition.length - 1
-        this.canvas.remove(this.penTool.path) 
-        this.penTool.str = this.penTool.str + 'L' + this.penTool.pointPosition[length].x + ' ' + this.penTool.pointPosition[length].y // 路径拼接
-        this.penTool.path = new fabric.Path(this.penTool.str)
-        this.penTool.path.set({
-          fill: 'green',
-          strokeWidth: 1.5,
-          stroke: '#1a80ff',
-          selectable: true,
-          hasBorders: false,
-          hasControls: false,
-          evented: false
-  
-        })
-        this.canvas.add(this.penTool.path)
-        this.canvas.renderAll()
-        this.penTool.pointArray.push(circle)
+        this.penTool.points.push(point)
+        if(this.penTool.points.length >= 2) {
+            this.penTool.pathStr = 'M' + '' + ''+ this.penTool.points[0].x + this.penTool.points[0].y +
+                                   'Q' + '' + this.penTool.points[1].p0.x + '' + this.penTool.points[1].p0.y + ''
+                                   this.penTool.points[1].p1.x + '' + this.penTool.points[1].p1.y + 
+                                   '' + this.downPoint.x + '' + this.downPoint.y
+            let line = new fabric.Path(this.penTool.pathStr,{ fill: '', stroke: 'black', objectCaching: false });
+        
+            this.canvas.add(line)
+        }
+
     }
 
-    penMove(e) {
-        console.log(e)
+    penMove() {
+        // console.log(e);
+    }
+
+    createControlPoints(p){
+        let  p0 = new fabric.Circle({
+            id: uv4(),
+            radius: 4,
+            stroke: 'green',
+            fill: 'yellow',
+            top: p.y+10,
+            left: p.x+10,
+            hasControls: false, selectable: false,
+            visible: false
+        })
+
+        let p1 = new fabric.Circle({
+            id: uv4(),
+            radius: 4,
+            stroke: 'green',
+            fill: 'yellow',
+            top: p.y -10,
+            left: p.x -10,
+            hasControls: false, selectable: false,
+            visible: false
+        })
+        this.canvas.add(p0,p1)
+        return {
+            p0: {
+                x:  p.x+10,
+                y:  p.y+10
+            },
+            p1: {
+                x: p.x -10,
+                y: p.y -10,
+            }
+        }
+    }
+
+    penUp(){
+      
     }
 
     penFinish() {
-        this.canvas.remove(this.penTool.path)
-        this.penTool.pointPosition.push({
-            x: this.penTool.pointPosition[0].x,
-            y: this.penTool.pointPosition[0].y
-        })
-        this.penTool.str = this.penTool.str + 'z'
-        this.penTool.path = new fabric.Path(this.penTool.str)
-        this.penTool.path.set({
-            fill: '#7c4529',
-            strokeWidth: 1.5,
-            stroke: '#1a80ff'
-        })
-        this.canvas.add(this.penTool.path)
-        this.canvas.renderAll()
+        
     }
 
-    removePoint() {
-        for (let item of this.penTool.pointArray) {
-          this.canvas.remove(item)
-        }
-        this.penTool.str = ''
-        this.penTool.pointArray = []
-        this.penTool.pointPosition = []
-        this.penTool.path.set({
-          stroke: null, 
-        })
-        this.canvas.renderAll()
-    }
-
+    
     getCanvasObjects() {
 
     }

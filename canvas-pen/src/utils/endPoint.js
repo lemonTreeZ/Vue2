@@ -19,10 +19,10 @@ export class EndPoint {
   constructor(x, y, cp0, cp1) {
     this.x = x || 0
     this.y = y || 0
-    this.selected = false // 点被选中
+    this.selected = false 
     this.cp0 = cp0 || new ControlPoint(x, y)
     this.cp1 = cp1 || new ControlPoint(x, y)
-    this.cpBalance = true  // 控制平衡点
+    this.cpBalance = true  
   }
 
   draw(ratio) {
@@ -56,11 +56,11 @@ export class EndPoint {
     }
     if(this.cp0.x !== this.x || this.cp0.y !== this.y){
       this.cp0.print(ratio)
-      this.line(this.cp0.x, this.cp0.y, this.x,this.y, this.ctx, pointStyle.end_point_color)
+      this.line(this.cp0.x, this.cp0.y, this.x,this.y, this.ctx, 'blue')
     }
     if(this.cp1.x !== this.x || this.cp1.y !== this.y){
       this.cp1.print(ratio)
-      this.line(this.cp1.x, this.cp1.y, this.x,this.y, this.ctx, pointStyle.end_point_color)
+      this.line(this.cp1.x, this.cp1.y, this.x,this.y, this.ctx, 'blue')
     }
   }
   //绘制控制线
@@ -87,7 +87,6 @@ export class EndPoint {
         return this.cp1
       }
     }
-    // console.log("endPointChange",this.ctx.isPointInPath(x, y))
     return false
   }
   //计算两点间的距离
