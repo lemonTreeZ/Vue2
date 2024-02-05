@@ -21,7 +21,7 @@
         <button @click="drawTool('FPoint')">画红点</button>
         <button @click="fabricToolObj.reSetpenTool();drawTool('pen')">钢笔工具</button>
         <button>直线</button>
-        <button>自由绘制</button>
+        <button @click="drawTool('penOver')">钢笔结束</button>
         <button @click="fabricToolObj.getCanvasObjects()">获取画布信息</button>
       </div>
     </div>

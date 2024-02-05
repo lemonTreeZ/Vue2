@@ -9,21 +9,21 @@
         <canvas id="img-ctx" width="950" height="600" tabindex="1"></canvas>
       </div>
       <div class="draw-btn-group">
-        <button @click = editDraw()>图形编辑</button>
-        <button @click = "drawTool('rect')">矩形绘制</button>
-        <button @click="rebackCanvas()">初始化画布</button>
-        <button @click="drawTool('FPoint')">画红点</button>
-        <button @click="fabricToolObj.initPen();drawTool('pen')">钢笔工具</button>
+        <button>图形编辑</button>
+        <button>矩形绘制</button>
+        <button>初始化画布</button>
+        <button>画红点</button>
+        <button>钢笔工具</button>
         <button>直线</button>
-        <button>自由绘制</button>
-        <button @click="fabricToolObj.getCanvasObjects()">获取画布信息</button>
+        <button>钢笔结束</button>
+        <button>获取画布信息</button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import {fabricTool} from '../utils/fabricTool.js'
+import {panelTool} from '../utils/pannel.js'
 export default {
   name: 'FTool',
   data() {
@@ -35,18 +35,7 @@ export default {
   },
   methods:{
     init() {
-      let img = 'https://clubimg.club.vmall.com/data/attachment/forum/202108/22/182949mtoxhphast0upmq0.png'
-      this.fabricToolObj = new fabricTool()
-      this.fabricToolObj.setBackImg(img)
-    },
-    rebackCanvas() {
-      this.fabricToolObj.rebackCanvas()
-    },
-    editDraw(){
-      this.fabricToolObj.selectionObj()
-    },
-    drawTool(type) {
-      this.fabricToolObj.drawType = type
+     
     }
   },
   mounted() {
@@ -127,3 +116,4 @@ i {
   border: 1px solid #ccc;
 }
 </style>
+../utils/pannel.js

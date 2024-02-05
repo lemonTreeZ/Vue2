@@ -73,9 +73,6 @@ export class fabricTool{
             }
             this.penDraw()
         }
-        if(this.drawType === 'test') {
-            this.testPen()
-        }
     }
 
     mouseMoveHandle(e) {
@@ -98,9 +95,6 @@ export class fabricTool{
         this.moveCount++
         if(this.drawType === 'pen') {
             this.penMove(e)
-        }
-        if(this.drawType === 'penOver') {
-            this.testPen()
         }
     }
 
@@ -478,11 +472,6 @@ export class fabricTool{
         this.canvas.getObjects().forEach(e => {
             console.log(e);
         })
-    }
-
-    testPen() {
-      console.log("sss",this.penTool.paths);
-    
     }
 }
 
