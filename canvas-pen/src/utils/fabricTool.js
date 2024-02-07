@@ -20,12 +20,11 @@ export class fabricTool{
             fireRightClick: true,
             stopContextMenu: true
         })
-        this.imgCanvas = new fabric.Canvas('img-canvas',{
-            fireRightClick: true,
-            stopContextMenu: true
-        })
+        this.imgCanvas = document.querySelector('#img-ctx')
+        this.relationship = {x:0,y:0,zoom:1}
+
         this.penTool = {
-            ctx: this.canvas.getContext('2d'),
+            ctx: this.imgCanvas.getContext('2d'),
             stroke_color: '#ffc107',
             paths: [],
             dragging: false,
@@ -39,21 +38,21 @@ export class fabricTool{
     }
 
     initFabricTool() {
-        this.canvas.on('mouse:down',(e) => {this.mouseDownHandle(e)})
-        this.canvas.on('mouse:up',(e) => {this.mouseUpHandle(e)})
-        this.canvas.on('mouse:move',(e) => {this.mouseMoveHandle(e)})
-        this.canvas.on("mouse:wheel",(e)=>{this.mouseWheelHandle(e)})
+        this.canvas.on("mouse:wheel",(e)=>{this.mouseWheelHandle(e)},true)
+        this.canvas.on('mouse:down',(e) => {this.mouseDownHandle(e)},true)
+        this.canvas.on('mouse:up',(e) => {this.mouseUpHandle(e)},true)
+        this.canvas.on('mouse:move',(e) => {this.mouseMoveHandle(e)},true)
     }
 
     setBackImg(imgUrl) {
         fabric.Image.fromURL(imgUrl,(img) => {
             img.set({
-                scaleX: this.imgCanvas.width / img.width,
-                scaleY: this.imgCanvas.height / img.height,
+                scaleX: this.canvas.width / img.width,
+                scaleY: this.canvas.height / img.height,
                 left: 0,
                 top: 0
             })
-            this.imgCanvas.setBackgroundImage(img,this.imgCanvas.renderAll.bind(this.imgCanvas))
+            this.canvas.setBackgroundImage(img,this.canvas.renderAll.bind(this.canvas))
         })
         this.initFabricTool()
     } 
@@ -71,23 +70,18 @@ export class fabricTool{
             if(this.penTool.paths.length >= 1 && this.penTool.isOver) {
                 this.penTool.paths.push(new PathTool())
             }
-            this.penDraw()
-        }
-        if(this.drawType === 'test') {
-            this.testPen()
+            this.penDraw(e)
         }
     }
 
     mouseMoveHandle(e) {
-        if(this.isDrag) {
+        if(this.isDrag&&this.drawType !== 'pen') {
             let opt = e.e
-            let vpt = this.imgCanvas.viewportTransform
+
             let cvpt = this.canvas.viewportTransform
-            vpt[4] += opt.clientX - this.mouseDownPos.x
-            vpt[5] += opt.clientY - this.mouseDownPos.y
             cvpt[4] += opt.clientX - this.mouseDownPos.x
             cvpt[5] += opt.clientY - this.mouseDownPos.y
-            this.imgCanvas.requestRenderAll()
+
             this.canvas.requestRenderAll()
             this.mouseDownPos.x = opt.clientX
             this.mouseDownPos.y = opt.clientY
@@ -99,9 +93,7 @@ export class fabricTool{
         if(this.drawType === 'pen') {
             this.penMove(e)
         }
-        if(this.drawType === 'penOver') {
-            this.testPen()
-        }
+
     }
 
     mouseUpHandle(e) {
@@ -123,18 +115,14 @@ export class fabricTool{
 
     mouseWheelHandle(e) {
         let zoomDirection = e.e.deltaY
-        let zoom = this.imgCanvas.getZoom()
+        let zoom = this.canvas.getZoom()
         zoom *= 0.999 ** zoomDirection
         if (zoom > 20) zoom = 20
         if (zoom < 0.01) zoom = 0.01
         zoom *= 0.999 ** zoomDirection
-        this.imgCanvas.zoomToPoint(
-            {
-              x: e.e.offsetX, 
-              y: e.e.offsetY  
-            },
-            zoom 
-        )
+        const [x, y] = [e.e.offsetX, e.e.offsetY]
+        this.relationship.x += x / zoom - x/this.relationship.zoom
+        this.relationship.y += y / zoom - y/this.relationship.zoom
         this.canvas.zoomToPoint(
             {
               x: e.e.offsetX, 
@@ -159,15 +147,10 @@ export class fabricTool{
 
     rebackCanvas() {
         this.canvas.setZoom(1)
-        this.imgCanvas.setZoom(1)
         let vpt = this.canvas.viewportTransform
-        let mvpt = this.imgCanvas.viewportTransform
-        mvpt[4] = 0
-        mvpt[5] = 0
         vpt[4] = 0
         vpt[5] = 0
         this.canvas.requestRenderAll()
-        this.imgCanvas.requestRenderAll()
     }
 
     destroy() {
@@ -185,6 +168,11 @@ export class fabricTool{
             case 'FPoint':
                 this.drawPoint('red')
                 break
+            case 'line':
+                this.drawLine()
+                break
+            case 'dottedLine':
+                this.drawDottedLine()
         }
     }
 
@@ -219,6 +207,21 @@ export class fabricTool{
         this.canvas.add(cp)
     }
 
+    drawLine(){
+        this.canvas.selection = false
+        this.canvas.skipTargetFind = true
+        let line = new fabric.Line([this.downPoint.x,this.downPoint.y,this.upPoint.x,this.upPoint.y],{
+            fill: 'green',
+            stroke: 'red',
+            strokeWidth: 2
+        })
+        this.canvas.add(line)
+    }
+
+    drawDottedLine(){
+
+    }
+
     setControlsStyle() {
         fabric.Object.prototype.cornerStyle = "circle"
         fabric.Object.prototype.cornerSize = 10
@@ -239,6 +242,7 @@ export class fabricTool{
         this.drawType = 'edit'
         this.setControlsStyle()
         this.canvas.skipTargetFind = false
+        this.canvas.selection = true
         this.canvas.getObjects().forEach(ele => {
             ele.set('selectable',true)
         })
@@ -290,25 +294,19 @@ export class fabricTool{
         EndPoint.prototype.canvas = this 
     }
 
-    penDraw() {
-        this.canvas.skipTargetFind = true
+    penDraw(e) {
         this.penTool.isOver = false
-        let location = this.downPoint
-        let selectedPath = this.getSelectedPath()
+        let location = {
+            x: e.pointer.x,
+            y: e.pointer.y
+        }
         this.penTool.dragging = true
         this.penTool.isNewEndPoint = false
-        this.penTool.draggingControlPoint = false
+        this.penTool.draggingControlPoint = null
         this.penTool.currentEndPoint = this.isExistPoint(location.x,location.y)
         this.removeSelectedEndPoint()
         if(this.penTool.currentEndPoint) {
             this.penTool.currentEndPoint.selected = true
-            if(this.penTool.editCpBalance && !this.penTool.draggingControlPoint) {
-                let cep = this.penTool.currentEndPoint
-                cep.cpBalance = true
-                cep.cp0.x = cep.cp1.x = cep.x
-                cep.cp0.y = cep.cp1.y = cep.y
-                this.penTool.isNewEndPoint = true
-            }
             if(!this.penTool.draggingControlPoint && this.penTool.currentEndPoint === this.penTool.paths[this.penTool.paths.length -1][0] && this.penTool.paths[this.penTool.paths.length -1].length > 2) {
                 this.penTool.paths[this.penTool.paths.length - 1].isClose = true
                 this.penTool.isOver = true
@@ -316,11 +314,7 @@ export class fabricTool{
         } else {
             this.penTool.currentEndPoint = this.createEndPoint(location.x, location.y)
             this.penTool.isNewEndPoint = true
-            if(this.penTool.editCpBalance && selectedPath) {
-                selectedPath.path.addEndPoint(selectedPath.ep, this.penTool.currentEndPoint)
-            } else {
-                this.penTool.paths[this.penTool.paths.length - 1].push(this.penTool.currentEndPoint)
-            }
+            this.penTool.paths[this.penTool.paths.length - 1].push(this.penTool.currentEndPoint)
         }
         this.renderer()
     }
@@ -330,9 +324,11 @@ export class fabricTool{
         if(!this.penTool.dragging) {
             return
         }
-        let location = e.absolutePointer
+        let location = {
+            x: e.pointer.x,
+            y: e.pointer.y
+        }
         let ced = this.penTool.currentEndPoint
-        
         if(this.penTool.isNewEndPoint){
             ced.cp1.x = location.x
             ced.cp1.y = location.y
@@ -374,7 +370,6 @@ export class fabricTool{
             for(let i = 0; i < length; i++) {
                let  ep = path[i]
                 ep.printControlPoints()
-        
             }
         })
     }
@@ -426,7 +421,9 @@ export class fabricTool{
 
     renderer() {
         let ep, prev_ep, ctx = this.penTool.ctx
-        this.penTool.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+        this.penTool.ctx.beginPath()
+        this.penTool.ctx.clearRect(0, 0, this.canvas.width,this.canvas.height)
+        this.canvas.renderAll()
         this.penTool.paths.forEach((path) => {
             let length = path.length
             for(let i = 0; i < length; i++) {
@@ -443,7 +440,6 @@ export class fabricTool{
                 this.bezierCurveTo(prev_ep,ep,ctx)
             }
         })
-       
     }
 
     bezierCurveTo(prev_ep,ep,ctx) {
@@ -457,7 +453,6 @@ export class fabricTool{
             ep.cp0.x, ep.cp0.y,
             ep.x, ep.y
         )
-        // ctx.quadraticCurveTo(prev_ep.cp1.x, prev_ep.cp1.y, ep.x, ep.y)
         ctx.stroke()
         ctx.restore()
     }
@@ -480,9 +475,37 @@ export class fabricTool{
         })
     }
 
-    testPen() {
-      console.log("sss",this.penTool.paths);
-    
+    penFinished(){
+        let paths = this.penTool.paths.filter(item => {return item.isClose})
+        let str = ' '
+        for(let i = 0; i < paths.length; i++) {
+          str = 'M' + ' ' + paths[i][0].x + ' ' + paths[i][0].y
+          for(let j = 1,len = paths[i].length; j < len - 1; j++) {
+             let prev_p =  paths[i][j-1]
+             let cur_p = paths[i][j]
+             let next_p = paths[i][j+1]
+            str += ' ' + 'C' + ' ' + prev_p.cp1.x + ' ' + prev_p.cp1.y + ' '+
+                    cur_p.cp0.x + ' ' + cur_p.cp0.y + ' '+
+                    cur_p.x + ' ' + cur_p.y
+            
+            str += ' ' + 'C' + ' '+ cur_p.cp1.x + ' ' + cur_p.cp1.y + ' '+
+                    next_p.cp0.x + ' ' + next_p.cp0.y + ' '+
+                    next_p.x + ' ' +next_p.y
+            if(j === len - 1){
+                str += ' ' + 'C' +' ' + paths[i][j-1].cp1.x + ' ' + paths[i][j-1].cp1.y + ' ' +  
+                        paths[i][0].cp0.x + ' ' + paths[i][0].cp0.y + 
+                        paths[i][0].x + ' ' + paths[i][0].y
+            }
+          }
+          str += ' ' + 'z'
+            let line = new fabric.Path(str,{
+                fill:'yellow',
+                stroke: 'yellow',
+                strokeWidth: 3,
+            })
+            this.canvas.add(line)
+        }
+        this.drawType = ''
     }
 }
 

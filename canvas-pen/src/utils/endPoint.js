@@ -38,12 +38,12 @@ export class EndPoint {
     this.draw(ratio)
     this.ctx.save()
     this.ctx.strokeStyle = pointStyle.end_point_color
-    this.ctx.fillStyle = pointStyle.fill_color
+    this.ctx.fillStyle = 'transparent'
     this.ctx.lineWidth = pointStyle.stroke_width
     if(this.selected){
       this.ctx.fillStyle = pointStyle.hover_fill_color
     }
-    this.ctx.fill()
+    // this.ctx.fill()
     this.ctx.stroke()
     this.ctx.restore()
   }

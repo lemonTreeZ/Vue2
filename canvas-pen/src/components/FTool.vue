@@ -5,8 +5,7 @@
     </div> -->
     <div class="panel-content">
       <div class="content-demo" tabindex="100">
-        <canvas id="img-canvas" width="950" height="600" tabindex="0"></canvas>
-        <canvas id="img-ctx" width="950" height="600" tabindex="1"></canvas>
+        <canvas id="img-ctx" width="950" height="600"></canvas>
       </div>
       <div class="draw-btn-group">
         <!-- <i class="draw-icon icon-back" @click = editDraw()></i> -->
@@ -20,8 +19,9 @@
         <button @click="rebackCanvas()">初始化画布</button>
         <button @click="drawTool('FPoint')">画红点</button>
         <button @click="fabricToolObj.reSetpenTool();drawTool('pen')">钢笔工具</button>
-        <button>直线</button>
-        <button @click="drawTool('penOver')">钢笔结束</button>
+        <button @click="finishPen">钢笔结束</button>
+        <button @click="drawTool('line')">直线</button>
+        <button @click="drawTool('dotted-line')">虚线</button>
         <button @click="fabricToolObj.getCanvasObjects()">获取画布信息</button>
       </div>
     </div>
@@ -36,7 +36,7 @@ export default {
     return {
       fabricToolObj: null,
       article:'https://www.cnblogs.com/huangcy/p/9559695.html',
-      test:"https://juejin.cn/post/6897134376312635406"
+      test:"https://github.com/lgq627628/2020/tree/master/%E5%9B%BE%E5%BD%A2%E5%AD%A6/fabric"
     }
   },
   methods:{
@@ -53,6 +53,9 @@ export default {
     },
     drawTool(type) {
       this.fabricToolObj.drawType = type
+    },
+    finishPen(){
+      this.fabricToolObj.penFinished()
     }
   },
   mounted() {
@@ -127,9 +130,5 @@ i {
 }
 .icon-pen {
   background-image: url(./../assets/icon/7.png)
-}
-
-#img-ctx {
-  border: 1px solid #ccc;
 }
 </style>

@@ -18,6 +18,7 @@ export class ControlPoint {
     ratio = ratio || 1
     this.ctx.beginPath()
     this.ctx.arc(this.x * ratio, this.y * ratio, pointStyle.control_point_radius, 0, Math.PI * 2, false)
+    this.ctx.stroke()
   }
   //渲染控制点
   print(ratio) {
