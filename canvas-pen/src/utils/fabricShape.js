@@ -1,4 +1,4 @@
-import { fabric } from "fabric"
+import { fabric } from "fabric-with-erasing"
 
 export const drawLabelRect = (params) => {
     let {id,width,height,left,top,drawType,label} = params

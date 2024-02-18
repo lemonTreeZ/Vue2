@@ -21,8 +21,10 @@
         <button @click="fabricToolObj.reSetpenTool();drawTool('pen')">钢笔工具</button>
         <button @click="finishPen">钢笔结束</button>
         <button @click="drawTool('line')">直线</button>
-        <button @click="drawTool('dotted-line')">虚线</button>
+        <button @click="drawTool('dottedLine')">虚线</button>
+        <button @click="fabricToolObj.drawFree()">自由绘制</button>
         <button @click="fabricToolObj.getCanvasObjects()">获取画布信息</button>
+        <button @click="fabricToolObj.startEraser()">橡皮擦</button>
       </div>
     </div>
   </div>

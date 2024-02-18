@@ -1,4 +1,4 @@
-import { fabric } from "fabric"
+import { fabric } from "fabric-with-erasing"
 import {drawLabelRect, renderIcon, drawColorPoint} from './fabricShape'
 import {v4 as uv4} from 'uuid'
 import { ControlPoint } from './controlPoint'
@@ -50,7 +50,8 @@ export class fabricTool{
                 scaleX: this.canvas.width / img.width,
                 scaleY: this.canvas.height / img.height,
                 left: 0,
-                top: 0
+                top: 0,
+                erasable: false
             })
             this.canvas.setBackgroundImage(img,this.canvas.renderAll.bind(this.canvas))
         })
@@ -66,12 +67,14 @@ export class fabricTool{
         this.downPoint = e.absolutePointer
         this.isDrawing = true
         if(this.drawType === 'pen') {
+            this.canvas.isDrawingMode = false
             this.keyBoard.addEventListener('keydown', (e) => {this.keyDownHandle(e)})
             if(this.penTool.paths.length >= 1 && this.penTool.isOver) {
                 this.penTool.paths.push(new PathTool())
             }
             this.penDraw(e)
         }
+       
     }
 
     mouseMoveHandle(e) {
@@ -93,7 +96,6 @@ export class fabricTool{
         if(this.drawType === 'pen') {
             this.penMove(e)
         }
-
     }
 
     mouseUpHandle(e) {
@@ -173,10 +175,12 @@ export class fabricTool{
                 break
             case 'dottedLine':
                 this.drawDottedLine()
+                break
         }
     }
 
     drawRect() {
+        this.canvas.isDrawingMode = false
         this.canvas.skipTargetFind = true
         if(JSON.stringify(this.downPoint) === JSON.stringify(this.upPoint)) return
         const top = Math.min(this.downPoint.y,this.upPoint.y)
@@ -195,6 +199,7 @@ export class fabricTool{
     }
 
     drawPoint(color) {
+        this.canvas.isDrawingMode = false
         let params = {
             id: uv4(),
             color: color,
@@ -207,7 +212,8 @@ export class fabricTool{
         this.canvas.add(cp)
     }
 
-    drawLine(){
+    drawLine() {
+        this.canvas.isDrawingMode = false
         this.canvas.selection = false
         this.canvas.skipTargetFind = true
         let line = new fabric.Line([this.downPoint.x,this.downPoint.y,this.upPoint.x,this.upPoint.y],{
@@ -219,7 +225,31 @@ export class fabricTool{
     }
 
     drawDottedLine(){
+        this.canvas.isDrawingMode = false
+        this.canvas.selection = false
+        this.canvas.skipTargetFind = true
+        let line = new fabric.Line([this.downPoint.x,this.downPoint.y,this.upPoint.x,this.upPoint.y],{
+            fill: 'green',
+            stroke: '#FFF',
+            strokeWidth: 2,
+            strokeDashArray: [10,3]
+        })
+        this.canvas.add(line)
+    }
 
+    drawFree() {
+        this.canvas.selection = false
+        this.canvas.skipTargetFind = true
+        this.canvas.isDrawingMode = true
+        this.canvas.freeDrawingBrush = new fabric.PencilBrush(this.canvas)
+        this.canvas.freeDrawingBrush.width = 10
+        this.canvas.freeDrawingBrush.color = 'green' 
+    }
+
+    startEraser() {
+        this.canvas.isDrawingMode = true
+        this.canvas.freeDrawingBrush = new fabric.EraserBrush(this.canvas)
+        this.canvas.freeDrawingBrush.width = 10
     }
 
     setControlsStyle() {
@@ -230,15 +260,8 @@ export class fabricTool{
         this.createDelIcon(this.canvas)
     }
 
-    drawCircle() {
-
-    }
-
-    drawFree() {
-
-    }
-
     selectionObj() {
+        this.canvas.isDrawingMode = false
         this.drawType = 'edit'
         this.setControlsStyle()
         this.canvas.skipTargetFind = false
@@ -492,7 +515,7 @@ export class fabricTool{
                     next_p.cp0.x + ' ' + next_p.cp0.y + ' '+
                     next_p.x + ' ' +next_p.y
             if(j === len - 1){
-                str += ' ' + 'C' +' ' + paths[i][j-1].cp1.x + ' ' + paths[i][j-1].cp1.y + ' ' +  
+                str += ' ' + 'C' +' ' + paths[i][j].cp1.x + ' ' + paths[i][j].cp1.y + ' ' +  
                         paths[i][0].cp0.x + ' ' + paths[i][0].cp0.y + 
                         paths[i][0].x + ' ' + paths[i][0].y
             }
