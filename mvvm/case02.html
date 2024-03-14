@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue</title>
+</head>
+<body>
+    <div id="app">
+        <input type="text" v-model="num">{{num}}
+    </div>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script> -->
+    <script>
+
+        function observer(obj,vm) {
+            //obj app.data
+            //vm app
+            Object.entries(obj).map(([key,val]) => {
+                //key num val 1
+                //以app.data里的属性作为原始数据 给app对象本身挂载上这些属性(修饰后的)
+                //app.data.num => num(set,get)修饰 => app.num
+                defineReactive(vm,key,val)
+            })
+        }
+
+        //监听数据改变 defineProperty proxy
+        function defineReactive(obj, key, val) {
+            let dep = new Dep()
+            Object.defineProperty(obj,key,{
+                get() {
+                    //obj的key属性的值被获取的时候，触发
+                    console.log(`读取数据:${val}`)
+                    if(Dep.target) {
+                        dep.addSub(Dep.target)
+                    }
+                    return val
+                },
+                set(newVal) {
+                    //obj的key属性的值被修改的时候，触发
+                    if(val === newVal) {
+                        return
+                    }
+                    val = newVal
+                    console.log(`更新数据:${val}`)
+                    //发布通知 通知watcher update 
+                    dep.notify()
+                }
+            })
+        }
+
+
+        //创建一个新的空白的文档片段，并将处理后的dom加入该文档片段
+        function nodeToFragment(node,vm) {
+            let flag = document.createDocumentFragment()
+            let child
+            // 循环取出node中的第一个子节点，放入compile处理，后移动到fragement
+            while (child = node.firstChild) {
+                compile(child,vm)
+                flag.append(child)
+            }
+            return flag
+        }
+
+        /**
+         * 1. 解析原始dom，获取内容的差值标识 {{model}}
+         * 2. 提取的差值标识 数据与model层进行绑定
+         */
+        // 解析原始view,提取其中的model差值
+        function compile(node,vm) {
+            let reg = /\{\{(.*)\}\}/
+            if(node.nodeType === 1) {
+                // node 为Element的节点
+                let attr = node.attributes
+                for(let i = 0,len = attr.length; i<len; i++) {
+                    if(attr[i].nodeName === 'v-model') {
+                        let name = attr[i].nodeValue
+                        node.addEventListener('input',(e) => {
+                            vm[name] = e.target.value
+                        })
+                        node.value = vm[name] //model层数据对象
+                        node.removeAttribute('v-model')
+                        new Watcher(vm,node,name)
+                    }
+                }
+            }
+            if(node.nodeType === 3) {
+                // node为text类型节点
+                if(reg.test(node.nodeValue)) {
+                    let name = reg.exec(node.nodeValue)
+                    node.nodeValue = vm[name[1]] //model层数据对象
+                    new Watcher(vm,node,name[1])
+                }
+            }
+        }
+
+        // 发布订阅设计模式
+        class Dep {
+            constructor() {
+                //观察者/订阅者列表
+                this.subs = []
+            }
+            addSub(sub) {
+                this.subs.push(sub)
+            }
+            notify() {
+                this.subs.map(sub => {
+                    //通知所有订阅者
+                    sub.update()
+                })
+            }
+        }
+
+        //订阅者
+        class Watcher {
+            constructor(vm,node,name) {
+                this.name = name
+                Dep.target = this
+                this.node = node
+                this.vm = vm
+                this.init()
+            }
+            init() {
+                this.update()
+                Dep.target = null
+            }
+            update() {
+                //更新view展示 获取数据，修改dom
+                this.get()
+                this.node.value = this.value
+                this.node.nodeValue = this.value
+            }
+            get() {
+                this.value = this.vm[this.name]
+            }
+        }
+
+        class Vue {
+            constructor({el,data}) {
+                this.data = data
+                // this.num = this.data.num
+                // defineReactive(this,'num')
+                observer(this.data,this)
+                let ele = document.querySelector(el)
+                let dom = nodeToFragment(ele,this)
+                ele.appendChild(dom)
+            }
+        }
+
+        const app = new Vue({
+            el: '#app',
+            data: {
+                num: 1
+            }
+        })
+    </script>
+</body>
+</html>

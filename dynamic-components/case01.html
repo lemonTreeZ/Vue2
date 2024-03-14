@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动态组件</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+    <style>
+
+    </style>
+</head>
+<body>
+    <div id="app">
+        <p>我是根</p>
+        <button @click="changeComponent">点击切换组件</button>
+        <component :is="currentView"></component>
+        <component :is="{template:'#component-b'}"></component>
+    </div>
+    <template id="component-a">
+        <div>我是组件  A</div>
+    </template>
+
+    <template id="component-b">
+        <div>我是组件  B</div>
+    </template>
+    <script>
+        /**
+         * 动态组件：利用component元素的is属性
+         * is属性应该用v-bind修饰，可以简写为:
+         * is属性应该传入注册的组件名case
+         */
+        const components = [
+           {
+            template: '#component-a'
+           },
+           {
+            template: '#component-b'
+           }
+        ]
+        const app =  new Vue({
+            el: '#app',
+            data() {
+                return {
+                    message: 'hello',
+                    activeComponentName: 'componentA'
+                }
+            },
+            computed:{
+                currentView() {
+                    return components[0]
+                }
+            },
+            methods: {
+                changeComponent() {
+                    this.activeComponentName = this.activeComponentName==='componentA'?'componentB':'componentA'
+                }
+            }
+        })
+    </script>
+</body>
+</html>

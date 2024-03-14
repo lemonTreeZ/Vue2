@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动态组件</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+    <style>
+
+    </style>
+</head>
+<body>
+    <div id="app">
+        <p>我是根</p>
+        <button @click="changeComponent">点击切换组件</button>
+        <component-a v-if="activeComponentName==='componentA'"></component-a>
+        <component-b v-else></component-b>
+    </div>
+    <template id="component-a">
+        <div>我是组件  A</div>
+    </template>
+
+    <template id="component-b">
+        <div>我是组件  B</div>
+    </template>
+    <script>
+        const app =  new Vue({
+            el: '#app',
+            components: {
+                ComponentA: {
+                    template: '#component-a'
+                },
+                ComponentB: {
+                    template: '#component-b'
+                }
+            },
+            data() {
+                return {
+                    message: 'hello',
+                    activeComponentName: 'componentA'
+                }
+            },
+            methods: {
+                changeComponent() {
+                    this.activeComponentName = this.activeComponentName==='componentA'?'componentB':'componentA'
+                }
+            }
+        })
+    </script>
+</body>
+</html>

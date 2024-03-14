@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>class动态绑定</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        #app {
+            width: 600px;
+            margin: 100px auto;
+        }
+
+        .desc {
+            padding: 10px;
+            font-size: 18px;
+            background-color: #f1f1f171;
+        }
+
+        .desc.active {
+            color: red;
+        }
+        .on {
+            background-color: orange;
+        }
+        .red {
+            color: red;
+        }
+        .blue {
+            color: blue;
+        }
+        .yellow {
+            color: yellow;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <button @click="changeDesc">点击切换状态</button>
+        <p class="desc" :class="descCls">{{message}}</p>
+        <p :class="colors">值为对象: {{message}}</p>
+        <p :class="['desc',{'active':colorIdx===0}]">值为数组：{{message}}</p>
+    </div>
+    <script>
+        /**
+         * 修改标签样式属性
+         * dom.classList.add()
+         * dom.className = 'xxx'
+         * dom.style.xxx = xxx
+         * dom.classList.toggle('')
+         */
+        /**
+         * v-bind:class可以动态绑定class的值 
+         * 可以传入一个变量，变量的值为class名
+         * 可以传入一个对象，key为class名，vlaue决定是否添加该class
+         * 可以传入一个数组，数组值为class名
+         * 可以组合使用
+         */
+        let red = 'red'
+        let app = new Vue({
+            el: '#app',
+            data() {
+                return {
+                    message: '测试',
+                    descCls: 'active',
+                    colors: {
+                        [red]: true,
+                        'blue': false,
+                        'yellow': false
+                    },
+                    colorIdx:0
+                }
+            },
+            methods: {
+                changeDesc() {
+                    this.descCls =  this.descCls === 'active' ? '' : 'active'
+                    this.colorIdx++
+                    this.colors = Object.fromEntries(Object.entries(this.colors).map(([key,value],idx) => {
+                        value = false
+                        if(idx === this.colorIdx) {
+                            value = true
+                        }
+                        return [key,value]
+                    }))
+                }
+            }
+        })
+    </script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>props数据传递</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+</head>
+<body>
+    <div id="app">
+        <product-item :product-num="number"></product-item>
+    </div>
+    <!-- 模板抽离 方式一-->
+    <template id="product-item">
+        <div class='product'>
+            <p>子组件</p>
+            <p >{{productNum}}</p>    
+        </div>
+    </template> 
+    <!-- 模板抽离 方式二-->
+    <script type="text/x-template" id="product-item">
+        <div class='product'>
+            <p>子组件</p>
+            <p >{{productNum}}</p>    
+        </div>
+    </script>
+    <script>
+        /**
+         * 组件是无法直接使用父组件的实例和属性的
+         * 但是组件可以通过prop属性 使用实例或者父组件的model数据
+         * 1. 在子组件中设置属性props 注册需要接收的父组件数据
+         * 2. 在组件view层 自定义标签上 通过v-bind 绑定对应props里注册的属性名称 作为一个标签属性(可自定义)属性值 直接访问到上级view作用域(组件 实例)对应的实例/父组件的data属性
+         * props：Array|Object 可以是数组或对象
+         * data属性在html view层中 只能写kebab-case方式
+         * 在template中{{}}使用 驼峰变种
+         * 在props中 使用帕斯卡或者kebab-case
+         * v-bind属性名 使用kebab-case
+         */
+        const ProductItem = {
+            // props: ['num'],
+            props: {
+                'product-num': {
+                    type: Number, //类型
+                    default: 10,//默认值 要和type类型一致
+                    require: true, //是否必填
+                    validator(value) { //验证函数 ，返回布尔值
+                        return /^\d+$/.test(value)
+                    }
+                }
+            },
+            template: `
+                <div class='product'>
+                    <p>子组件</p>
+                    <p >{{productNum}}</p>    
+                </div>
+            `,
+            data() {
+                return {
+                    
+                }
+            },
+            methods: {
+                // add() {
+                //     this.number ++
+                // }
+            }
+        }
+        const app = new Vue({
+            el: '#app',
+            components: {ProductItem},
+            data() {
+                return {
+                    number:1
+                }
+            }
+        })
+    </script>
+</body>
+</html>

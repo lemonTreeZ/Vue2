@@ -1,0 +1,3 @@
+{
+    "presets": ["@babel/preset-env"] //使用预设环境
+}

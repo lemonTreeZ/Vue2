@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MVC观察者模式</title>
+    <style>
+        .view {
+            border: 1px solid #ccc;
+            width: 60px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <p class="view"></p>
+    <script>
+        /**
+         * 事件的发生过程
+         * 1. 用户和应用交互
+         * 2. 控制器的事件处理器被触发
+         * 3. 控制器从模型中请求数据，并将其交给视图
+         * 4. 视图将数据呈现给用户
+         */
+        class View {
+            constructor(controller) {
+                this.ele = document.querySelector('.view')
+                this.ele.addEventListener('click',controller.add.bind(controller))
+            }
+            render(model) {
+                this.ele.innerText = model.getVal()
+            }
+        }
+
+        class Model {
+            constructor() {
+                this.num = 0
+                this.views = []
+            }
+            add() {
+                this.num ++
+            }
+            getVal() {
+                return this.num
+            }
+            // 注册
+            register(view) {
+                this.views.push(view)
+            }
+            // 发布 数据发生改变时，进行发布，更新视图层
+            notify() {
+                for(let i = 0; i< this.views.length; i++) {
+                    this.views[i].render(this)
+                }
+            }
+        }
+
+
+        // 视图层触发事件，进行model层的数据更新
+        class Controller {
+            constructor() {
+                this.init()
+            }
+            init() {
+                this.model = new Model()
+                this.view = new View(this)
+                this.model.register(this.view)
+                this.model.notify()
+            }
+            add() {
+                this.model.add()
+                this.model.notify()
+            }
+        }
+
+        new Controller()
+    </script>
+</body>
+</html>

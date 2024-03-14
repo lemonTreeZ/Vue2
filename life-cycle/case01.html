@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生命周期-update</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+</head>
+<body>
+    <div id="app">
+        <p>{{message}}</p>
+    </div>
+    <script>
+        /**
+         * 运行阶段
+         * beforeUpdate 界面中的数据还是旧的，但是data数据已经更新，view和data还没有同步
+         * 中间处理过程(非生命周期)：先根据data中的数据，在内存中渲染出一个新的DOM，当新的DOM树更新后，会重新渲染到真实的页面中去，从而实现了从数据层model到视图层view的转换
+         * updated 页面重新渲染完毕，页面中的数据和data保持一致
+         * 销毁阶段
+         * beforeDestroy 执行该方法的时候，Vue的生命周期已经进入销毁阶段，但是实例上的各种数据还处于可用状态
+         * destroyed 组件已经全部销毁，Vue实例已经被销毁，Vue中的任何数据都不可以用
+         */
+        let app = new Vue({
+            el: '#app',
+            data() {
+                return {
+                    message: ''
+                }
+            },
+            methods:{
+
+            },
+            beforeUpdate() {
+                console.log("此时的message已经更新，但是浏览器页面上的数据没有发生变化",this.message,this.$el);
+            },
+            /**
+             * updated执行不一定代表浏览器页面上实际渲染完成
+             * GUI线程负责渲染，js线程负责执行，两个线程是独立且互斥的
+             *  let oApp = document.querySelector('#app')
+             *  let child = document.createElement('div')
+             *  oApp.appendChild(child) //向GUI发送消息告诉GUI进行渲染
+             *  alert('123')
+             */
+           
+            updated() {
+                console.log("更新结束，页面数据已更新",this.$el);
+            }
+        })
+    </script>
+</body>
+</html>

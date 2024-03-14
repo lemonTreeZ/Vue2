@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>组件通信 $parent $children</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+    <style>
+         * {
+            margin: 0;
+            padding: 0;
+        }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+        #app {
+            width: 80%;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .component {
+            width: 80%;
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid red;
+        }
+        input {
+            padding: 5px 20px;
+            margin: 20px 0;
+        }
+        .br-green {
+            border: 1px solid green;
+        }
+        .br-blue {
+            border: 1px solid blue;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <parent-component></parent-component>
+    </div>
+    <template id="parent">
+        <div class="component">
+            <h3>这里是父组件parent</h3>
+            <input type="text" v-model="message">
+            <p>我的信息内容：{{message}}</p>
+            <!-- <p>接收信息内容：{{childMsg}}</p> -->
+            <!-- <p>接收信息内容：{{$children.message}}</p> -->
+            <p>接收信息内容：{{child.message}}</p>
+            <child-component></child-component>
+        </div>
+    </template>
+
+    <template id="child">
+        <div class="component br-green">
+            <h3>这里是子组件child</h3>
+            <input type="text" v-model="message">
+            <p>我的信息内容：{{message}}</p>
+            <p>接收信息内容：{{$parent.message}}</p>
+        </div>
+    </template>
+    <script>
+        /**
+         * 可以在Vue中直接通过this.$parent来获取当前组件的父组件实例(如果有的话)
+         * 可以在Vue中直接通过this.$children来获取当前组件的子组件实例(如果有的话)
+         * 但是$children并不保证顺序，也不是响应式的，可以考虑使用数组或者对象来作为真正的来源
+         */
+        const ChildComponent = {
+            template: "#child",
+            data(){
+                return {
+                    message: ''
+                }
+            },
+            props: {
+                parentMessage: {
+                    type: String
+                }
+            },
+            methods:{
+               
+            }
+        }
+
+        const ParentComponent = {
+            template: "#parent",
+            data(){
+                return {
+                    message:"",
+                    childMsg:"",
+                    child:""
+                }
+            },
+            components: {
+                ChildComponent
+            },
+            methods: {
+               
+            },
+            mounted() {
+               this.child = this.$children[0]
+            }
+            //受生命周期的影响 computed拿不到this.$children 
+        }
+
+        const app = new Vue({
+            el: '#app',
+            data() {
+                return{}
+            },
+            components: {
+                ParentComponent
+            }
+        })
+    </script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>插值表达式与条件渲染</title>
+    <script src="./node_modules//vue/dist/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- 
+            所有的指令式写法都支持基本的表达式写法
+            但是不支持自增自减写法 比如 time++ time-- 会死循环
+            不支持控制流程 if
+            不支持声明语句 let
+            v-if 指令用于条件性的渲染一块内容，这块内容指挥在指令的表达式返回true值的时候被渲染
+        -->
+        <p v-text="String(time)[1]&&String(time) || '0' + time"></p>
+        <p>{{String(time)[1]&&String(time) || '0' + time}}</p>
+        <p v-if="showName">显示姓名: {{name}}</p>
+        <p v-else>显示年纪: {{age}}</p>
+        <p v-if="age<=13">小朋友</p>
+        <p v-else-if="age>13&&age<=45">少年</p>
+        <p v-else>中年</p>
+    </div>
+    <script>
+        let app = new Vue({
+            el: '#app',
+            data() {
+                return {
+                    time: 1,
+                    name: '姓名',
+                    age: 200,
+                    showName: true,
+                    showAge: true
+                }
+            },
+            methods: {
+
+            }
+        })
+    </script>
+</body>
+</html>

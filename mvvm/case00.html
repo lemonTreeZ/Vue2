@@ -1,0 +1,70 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MVC</title>
+    <style>
+        .view {
+            border: 1px solid #ccc;
+            width: 60px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <p class="view"></p>
+    <script>
+        /**
+         * view: 视图层： html css innnerHTML innerText 负责数据的展示
+         * model: 数据层：用于封装和程序业务逻辑相关的数据以及数据的处理方式
+         * controller：控制层：用来处理业务逻辑，负责从视图里面读取数据并向模型发送数据
+         */
+        class View {
+            constructor(controller) {
+                this.ele = document.querySelector('.view')
+            }
+            render(model) {
+                this.ele.innerText = model.getVal()
+            }
+        
+        }
+
+        class Model {
+            constructor() {
+                this.num = 0 //数据
+            }
+            add() {
+                this.num++
+            }
+            sub() {
+                this.num--
+            }
+            getVal() {
+                return this.num
+            }
+        }
+
+        class Controller {
+            constructor(view,model) {
+                this.view = view
+                this.model = model
+                this.init()
+            }
+            init() {
+                this.view.ele.addEventListener('click',() => {
+                    this.model.add()
+                    this.view.render(this.model)
+                })
+            }
+        }
+
+        let view = new View()
+        let model = new Model()
+        view.render(model)
+        new Controller(view,model)
+
+    </script>
+</body>
+</html>

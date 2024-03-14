@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>列表渲染</title>
+    <script src="./node_modules//vue/dist/vue.js"></script>
+</head>
+<body>
+    <!-- 
+        v-for
+        数组：指令基于一个数组来渲染一个列表，需要用(item in items)的特殊语法，items是源数据数组，item是被迭代的数组元素的别名
+        在v-for块中，可以访问所有父作用域的property，还支持可选的第二个参数，即当前项的索引
+        可以用of替代in作为分隔符，of更接近js迭代器的语法
+        对象：遍历一个对象的property
+        支持可选的第二个参数为property名称，也就是键名；支持可选的第三个参数，也就是索引(会按照Object.keys()的结果遍历)
+        [不能保证在不同的js引擎下，Object.keys()的结果相似]
+     -->
+    
+    <div id="app">
+        <ul>
+            <li v-for="(item,idx) in list" :key="idx">{{idx}}-{{item}}</li>
+        </ul>
+        <div class="product">
+            <p v-for="(val,key,idx) in product" :key="idx">{{key}}:{{val}}--{{idx}}</p>
+        </div>
+        <div class="pet">
+            <p v-for="(item,index) in pet" :key="index">{{item.type}}:{{item.name}}--{{index}}</p>
+        </div>
+    </div>
+    <script>
+        let app = new Vue({
+            el:'#app',
+            data() {
+                return {
+                    list: ['苹果','梨子','柚子','橙子','香蕉'],
+                    product: {
+                        id: "23234",
+                        name: "测试产品",
+                        price: 99,
+                        desc: '测试产品'
+                    },
+                    pet: [
+                        {
+                            type: 'cat',
+                            name: '猫'
+                        },
+                        {
+                            type: 'dog',
+                            name: '狗'
+                        },
+                        {
+                            type: 'parrot',
+                            name: '鹦鹉'
+                        }
+                    ]
+                }
+            },
+            methods: {
+
+            }
+        })
+        function defineReactive(obj,key,val) {
+            Object.defineProperty(obj, key, {
+                get() {
+                    console.log(`${key}触发getter`)
+                    return val
+                },
+                set(newVal) {
+                    console.log(`${key}触发setter`)
+                   val = newVal
+                }
+            })
+        }
+    </script>
+</body>
+</html>

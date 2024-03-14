@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+</head>
+<body>
+    <div id="app">
+        <form action=" javascript:;">
+            <label for="username">用户名:</label>
+            <!-- <input type="text" name="username" placeholder="请输入用户名" :value="username"> -->
+            <input type="text" name="username" placeholder="请输入用户名" v-model="username">
+            <label for="sex">性别</label>
+            <input type="radio" id="sex" name="sex" :value="man">男
+            <input type="radio" id="sex" name="sex" :value="woman">女
+            <input type="radio" id="sex" name="sex" value="男" v-model="sex">男
+            <input type="radio" id="sex" name="sex" value="女" v-model="sex">女
+        </form>
+        <p>{{username}}</p>
+    </div>
+    <script>
+        /** 
+         * 传统获取input的值
+         * oInput.onInput = function(e) {
+         *      e.target.value
+         *      this.value
+         * }
+         */
+        /**
+         * 表单输入绑定
+         * 可以用v-model在表单及模板表达式上创建双向数据绑定，会根据控件类型自动选取正确的方法来更新元素
+         * 本质上是语法糖，负责监听用户的输入事件以更新数据，并对一些极端场景进行特殊处理
+         * v-model会忽略所有表单元素的value、checked、selected attribute的初始值而总是将Vue实例的数据作为数据来源，所以应该通过组件的data选项中声明初始值
+         * v-model在内部为不同的输入元素使用不同的property并抛出不同的事件
+         *  text和textarea元素使用value property和input事件
+         *  checkbox和radio使用checked property和change事件
+         *  select字段将value作为prop并将change作为事件
+         * v-model在每次input事件触发后将输入框的值与数据进行同步，可以添加lazy修饰符，从而转为在change事件之后进行同步 v-model.lazy
+         * 如果想自动将用户的输入值转为数值类型，可以添加number修饰符 v-model.number
+         * 如果要过滤用户输入的首位空白字符，可以给v-model添加trim修饰符 v-model.trim
+         */
+        let app = new Vue({
+            el: '#app',
+            data() {
+                return {
+                    message:"hello world",
+                    username: '',
+                    man: true,
+                    woman: false
+                }
+            },
+
+        })
+    </script>
+</body>
+</html>

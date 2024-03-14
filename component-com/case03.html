@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>组件通信 $attribute $listenner</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+    <style>
+          * {
+            margin: 0;
+            padding: 0;
+        }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+        #app {
+            width: 80%;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .component {
+            width: 80%;
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid red;
+        }
+        input {
+            padding: 5px 20px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        {{rootMsg}}
+        <input type="text">
+        <p>来自孙子组件的信息: {{grandsonMsg}}</p>
+        <attrs-component :test-attrs="rootMsg"  @keyup="receive" @ck="sendMsg"></attrs-component>
+    </div>
+
+    <template id="attrs-component">
+        <div class="component">
+            <p>{{message}}</p>
+            <p>我是来自父组件的内容: {{$attrs?.['test-attrs']}}</p>
+            <child-component v-bind="$attrs" v-on="$listeners"></child-component>
+        </div>
+    </template>
+
+
+    <template id="child">
+        <div class="component">
+            <input type="text" v-on="$listeners">
+            <h3>这里是孙子组件child</h3>
+            <p>根实例信息：{{$attrs?.['test-attrs']}}</p>
+            <button @click="$emit('ck',$event)">sendMsg</button>
+        </div>
+    </template>
+    <script>
+        /**
+         * $attrs和$listeners是Vue2.4中新增的属性，主要用来供使用者开发高级组件
+         * $attrs：用来接收父作用域中不作为props被识别的attribute属性，并且可以通过v-bind="$attrs"传入组件内部
+         * $listeners：包含了父作用域中的v-on事件监听器，可以通过v-on="$listeners"传入内部组件
+         * vm.$attrs: 类型 | {[key:string]:string} 只读
+         * vm.$listeners：类型 | {[key: string]: Function | Array}
+         */
+         const ChildComponent = {
+            template: "#child",
+            data(){
+                return {
+                    message: ''
+                }
+            },
+            methods:{
+               
+            }
+        }
+
+         
+        const AttrsComponent = {
+            template:'#attrs-component',
+            props: {},
+            components: {
+                ChildComponent
+            },
+            data() {
+                return {
+                    message: "我是组件attrs-component",
+                }
+            }
+        }
+
+        const app = new Vue({
+            el: '#app',
+            data() {
+                return{
+                    rootMsg: '我是根节点,实例app',
+                    grandsonMsg: ''
+                }
+            },
+            components: {
+                AttrsComponent
+            },
+            methods: {
+                receive(e) {
+                    this.grandsonMsg = e.target.value
+                },
+                sendMsg(e) {
+                    console.log('sendMsg',e.target.innerText);
+                }
+            }
+        })
+    </script>
+</body>
+</html>

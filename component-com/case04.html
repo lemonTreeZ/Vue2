@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+    <style>
+          * {
+            margin: 0;
+            padding: 0;
+        }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+        #app {
+            width: 80%;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .component {
+            width: 80%;
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid red;
+        }
+        input {
+            padding: 5px 20px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <input type="text" v-model="message.content">
+        <parent-component></parent-component>
+    </div>
+    <template id="parent">
+        <div class="component">
+            <h3>这里是父组件parent</h3>
+            <child-component></child-component>
+        </div>
+    </template>
+
+    <template id="child">
+        <div class="component br-green">
+            <h3>这里是子组件child</h3>
+            <p>这是父组件的provide信息:{{parentData}}</p>
+            <p>这是根组件的provide信息:{{rootData.content}}</p>
+        </div>
+    </template>
+    <script>
+        /**
+         * provide/inject这对选项需要一起使用，以允许一个祖先组件向其所有子孙后代注入一个依赖
+         * 不论组件层次有多深，并在其上下游关系成立的时间里始终生效，一个注入，一个承接
+         * provide:是一个对象,或者一个返回对象的函数吗，该对象包含可注入其子孙的property，即要传递给子孙的属性和属性值
+         * inject:一个字符串数组，或者一个对象，当其为字符串数组时，使用方式和props相似，只不过接收的属性由data变成了provide中的属性，当其为对象时
+         * provide和inject的绑定数据是不可响应的，可以传递一个可引用的对象，绕开绑定数据
+         */
+         const ChildComponent = {
+            template: "#child",
+            data(){
+                return {
+                   
+                }
+            },
+            methods:{
+               
+            },
+            inject: ['parentData','rootData']
+        }
+
+        const ParentComponent = {
+            template: "#parent",
+            data(){
+                return {
+                
+                }
+            },
+            methods:{
+               
+            },
+            provide: {
+                parentData: '来自parent的data信息 provide信息'
+            },
+            components: {
+                ChildComponent
+            }
+        }
+
+        const app = new Vue({
+            el: '#app',
+            data() {
+                return{
+                    message: {
+                        content: ''
+                    }
+                }
+            },
+            provide() {
+                return {
+                    rootData: this.message
+                }
+            },
+            components: {
+                ParentComponent
+            }
+        })
+    </script>
+</body>
+</html>

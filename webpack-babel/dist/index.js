@@ -1,0 +1,1 @@
+(()=>{const o={a:1,b:2};let e=Object.fromEntries(Object.entries(o).map((([o,e])=>[o,e+1])));console.log(function({obj:o,prop:e}){return!!o?.[e]}({obj:o,prop:"b"})),console.log("result",e)})();

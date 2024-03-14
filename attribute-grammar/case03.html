@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>filter</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+</head>
+<body>
+    <div id="app">
+        <form action="javascript:;">
+            <input type="text" name="letter" v-model.number="letter">
+            <p>{{padLeft(letter)}}--------------methods</p>
+            <p>{{padLeftLetter}}--------------computed</p>
+            <p>{{letter | filterLetter(letter)}}--------------filters</p>
+            <p>{{letter | filterPad}}</p>
+        </form>
+    </div>
+    <script>
+        /**
+         * methods: 服务对象无 单纯的方法 可以访问this(Vue实例) 事件 功能函数 可异步
+         * computed: 服务对象属性 计算(原始数据的处理 返回新数据) 可以访问this 不可以异步
+         * watch: 服务对象属性 触发器 注重响应 属性值变化的时候 进行附加行为this(Vue实例) 可异步
+         * filters：服务对象数据 针对数据 工具方法用于常见的文本格式化 this(window|undefined) 不指向实例 纯函数工具 不推荐异步
+         * 数据 | filter1 | filter2
+         * 结果 filter2(filter1(数据))的返回值
+         * 参数
+         * 参数0 | 左边的值
+         * 参数1...参数n filter的实际写入参数
+         * this指向window
+         * filters可以用于双花括号插值表达式和v-bind表达式 过滤器应该被添加在JavaScript表达式的尾部，由管道符号指示
+         */
+        let app = new Vue({
+            el: '#app',
+            data() {
+                return {
+                    letter:"",
+                    
+                }
+            },
+            methods: {
+                padLeft(val) {
+                    return String(val)[1]&&String(val) || '0' + val
+                }
+            },
+            computed: {
+                padLeftLetter() {
+                    return String(this.letter)[1]&&String(this.letter) || '0' + this.letter
+                }
+            },
+            filters:{
+                filterLetter(val) {
+                    return String(val)[1]&&String(val) || '0' + val
+                },
+                filterPad(val) {
+                    return val + '值改变了'
+                }
+            }
+        })
+    </script>
+</body>
+</html>

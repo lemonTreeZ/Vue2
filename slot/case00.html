@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>slot</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+        #app {
+            width: 80%;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .component {
+            width: 80%;
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid red;
+        }
+    
+    </style>
+</head>
+<body>
+    <div id="app">
+        <p>实例 root</p>
+        <parent-component></parent-component>
+    </div>
+    <template id="parent">
+        <div class="component">
+            <p>{{message}}</p>
+            <child-component>
+                <template>
+                    <p>匿名插槽，parent组件给child组件插入的内容</p>
+                </template>
+            </child-component>
+        </div>
+    </template>
+    <template id="child">
+        <div class="component">
+            <p>{{message}}</p>
+            <slot></slot>
+        </div>
+    </template>
+    <script>
+        /**
+         * slot 插槽 可以给组件注入自定义内容
+         * 类似usb接口
+         * v-slot 缩写语法糖 #
+         * v-bind 缩写语法糖 :
+         * v-on 缩写语法糖 @
+         * 后备内容：只会在没有提供插槽内容的时候被渲染 
+         * 插槽的作用域：
+         * 父级模板里的所有内容都是在父级作用域中编译的，子模版中的所有内容都是在子作用域中编译的
+         */
+        const ChildComponent = {
+            name: 'child',
+            template:"#child",
+            data(){
+                return{
+                    message:"我是child组件"
+                }
+            }
+        }
+        const ParentComponent = {
+            name: 'parent',
+            template:"#parent",
+            data(){
+                return{
+                    message:"我是parent组件"
+                }
+            },
+            components:{ChildComponent}
+        }
+        
+        const app = new Vue({
+            el:'#app',
+            data(){
+                return{
+
+                }
+            },
+            components:{ParentComponent}
+        })
+    </script>
+</body>
+</html>

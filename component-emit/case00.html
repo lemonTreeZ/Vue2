@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>组件props总结</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+</head>
+<body>
+    <!-- 爷爷 -->
+    <div id="app">
+        <banner-wrap></banner-wrap>
+    </div>
+    <!-- 孙子 -->
+    <template id="banner-message">
+        <div>{{message}}</div>
+    </template>
+    <!-- 儿子、父亲-->
+    <!-- 
+        组件传递属性 值是静态的内容(具体的String Number) props对应的属性不需要v-bind
+        值是动态的需要v-bind绑定标签属性名(attr)
+     -->
+    <template id="banner-wrap">
+        <div>
+            <h1>组件标题 banner wrap</h1>
+            <banner-message :message="'传递给子组件的值 静态'"></banner-message>
+            <banner-message message="你好"></banner-message>
+        </div>
+    </template>
+    <script>
+        /**
+         * 父组件传递数据是类似在标签中写一个属性(attr),如果传递的数据是data中的model变量就需要在attr前面加上v-bind
+         * 如果传递的是固定的静态值 number boolean array object都会被传递为String类型
+         * 如果props接收的是一个对象，需要注意的是传递的其实是一个对象的引用，并不是变成了子组件自己的model属性对象
+         * 子组件不允许修改父组件的数据，不要在组件的methods、computed中修改接收到的数据属性
+         * 可以在computed和watch中监听props属性值的变化
+         */
+        const BannerMessage = {
+            template: `#banner-message`,
+            props: {
+                message: {
+                    type: String,
+                    default: '默认信息',
+                    required: true,
+                    validator(value) {
+                        return !(/^\S*$/.test(value))
+                    }
+                }
+            },
+            data() {
+                return {
+                    message: '我是组件信息内容'
+                }
+            }
+        }
+        const BannerWrap = {
+            template: `#banner-wrap`,
+            components:{BannerMessage},
+            data() {
+                return {
+                    message: ''
+                }
+            }
+        }
+        const app = new Vue({
+            el: '#app',
+            components: {
+                BannerWrap
+            },
+            data() {
+                return {
+
+                }
+            }
+        })
+    </script>
+</body>
+</html>

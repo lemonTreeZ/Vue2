@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基础参数</title>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script> -->
+    <script src="./node_modules//vue/dist/vue.js"></script>
+</head>
+<body>
+    <!-- 
+        模板语法：{{插值数据}}(Mustache语法)
+        v-bind biao 绑定HTML attribute
+        v-once 可以执行一次性插值 但是插值内容不会随着数据更新响应 只渲染元素和组件一次，随后的渲染会视为静态内容跳过
+        v-text 与插值双大括号一样，将数据解析为纯文本 不会输出HTML内容 与{{}}的区别是加载时不显示插值符号{{}},同时更新元素的整体textContent
+        v-cloak 如果Vue实例对于Mustache插值标签的编译未完成，会直接显示原模板内容，通过v-cloak指令隐藏为编译的插值内容直到实例准备完毕
+        [v-cloak] { display: none} <div v-cloak>{{msg}}</div>
+        v-html 输出html代码 不推荐使用v-html动态渲染任意的HTML，会导致XSS攻击的风险，绝不能对用户提供的内容使用插值
+        v-pre 跳过没有指令的语法、没有使用插值语法的节点，能加快编译
+     -->
+    <div id="app">
+        <p>一个vue实例</p>
+        <p>{{message}}</p>
+        <p>{{showMsg()}}</p>
+        <p v-text="message"></p>
+    </div>
+    <script>
+        /**
+         * el: string | Element (可以是CSS选择器，也可以是一个HTMLElement实例)
+         * 限制：只在用new创建实例时生效
+         * 访问：在实例挂载之后，元素可以用vm.$el访问
+         * 如果在实例化时存在这个选项，实例立即进入编译过程，否则，需要显示调用vm.$mount()手动开启编译
+         * 
+         * data: Object | Function
+         * 限制：组件的定义只接受Function
+         * 使用：Vue对象的数据对象，Vue将会递归把data的property转换为getter/setter，从而让data的property能够响应数据变化
+         * 对象必须是纯粹的对象(含有零个或多个的key/value对) data应该只能是数据，不推荐观察拥有状态行为的对象
+         * 实例创建过后，可以通过vm.$data访问原始数据对象 Vue实例也代理了data对象上所有的property,因此访问vm.a等价于访问vm.$data.a
+         * 以_或者$开头的property不会被Vue实例代理，因为可能和Vue内置的property、API冲突，可以使用vm.$data._property的方式访问
+         * 
+         * methods：{[key: string]: Function}
+         * methods将被混入到Vue实例中，可以直接通过VM实例访问这些方法，或者在指令表达式中使用
+         * 方法中的this自动绑定为Vue实例
+         * 注意：不要使用箭头函数来定义methods函数(plus:() => {}) 箭头函数绑定了父级作用域的上下文，所以this将不会按照期望指向Vue实例
+         */
+       let app =  new Vue({
+        el: '#app',
+        data: {
+            message: 'Hello World!'
+        },
+        methods: {
+            showMsg() {
+                return  this.message + 'show msg'
+            }
+        }
+       })
+    </script>
+</body>
+</html>
